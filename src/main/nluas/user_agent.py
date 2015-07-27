@@ -1,13 +1,20 @@
 from nluas.core_specializer import *
 from nluas.core_agent import *
 from nluas.analyzer_proxy import *
+from nluas.core_specializer import *
+from nluas.ntuple_decoder import NtupleDecoder
+import sys
 
 class UserAgent(CoreAgent):
-	def __init__(self, name, analyzer, specializer, decoder):
-		CoreAgent.__init__(self, name=name)
-		self.analyzer = analyzer
-		self.specializer = specializer
-		self.decoder = decoder
+	def __init__(self, args):
+		CoreAgent.__init__(self, args)
+		self.initialize_UI()
+		self.solve_destination = "{}_{}".format(self.federation, "ProblemSolver")
+
+	def initialize_UI(self):
+		self.analyzer = analyzer=Analyzer('http://localhost:8090')
+		self.specializer=CoreSpecializer()
+		self.decoder = NtupleDecoder()
 
 	def process_input(self, msg):
 		try:
@@ -16,7 +23,7 @@ class UserAgent(CoreAgent):
 				try:
 					ntuple = self.specializer.specialize(fs)
 					json_ntuple = self.decoder.convert_to_JSON(ntuple)
-					self.transport.send("ProblemSolver", json_ntuple)
+					self.transport.send(self.solve_destination, json_ntuple)
 					break
 				except Exception as e:
 					print(e)

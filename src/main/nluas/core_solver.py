@@ -22,25 +22,32 @@ but the schematic implementation can be implemented here.
 from nluas.ntuple_decoder import *
 from nluas.core_agent import *
 import random
+import sys
 
-parser.add_argument("complexity", type=int, help = "indicate level of complexity to run solver at")
 
 class CoreProblemSolver(CoreAgent):
 
-	def __init__(self, name, federation, logfile, loglevel, logagent, complexity, world =None):
+	def __init__(self, args):
 		self.ntuple = None
 		self.decoder = NtupleDecoder()
-		self.name = name
-		self.world = world
-		self.complexity = complexity
-		CoreAgent.__init__(self, name, federation, logfile, loglevel, logagent)
+		CoreAgent.__init__(self, args)
+		self.solver_parser = self.setup_solver_parser()
+		args = self.solver_parser.parse_args(self.unknown)
+		self.complexity = args.complexity
+		self.ui_address = "{}_{}".format(self.federation, "AgentUI")
+		self.transport.subscribe(self.ui_address, self.callback)
+
+	def setup_solver_parser(self):
+		parser = argparse.ArgumentParser()
+		parser.add_argument("-c", "--complexity", type=str, help="indicate level of complexity")
+		return parser
 
 	def callback(self, ntuple):
 		self.solve(ntuple)
 
 	def clarify(self, ntuple):
 		new = self.decoder.convert_to_JSON(ntuple)
-		self.transport.send("AgentUI", new)
+		self.transport.send(self.ui_address, new)
 
 	def solve(self, json_ntuple):
 		ntuple = self.decoder.convert_JSON_to_ntuple(json_ntuple)
@@ -87,4 +94,5 @@ class CoreProblemSolver(CoreAgent):
 		#return random.choice([True, False])
 		return False
 
-
+if __name__ == '__main__':
+	ps = CoreProblemSolver(sys.argv)
