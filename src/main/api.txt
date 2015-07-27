@@ -1,0 +1,75 @@
+Transport API
+
+Minimal two-way chat example. In one shell, call "minchat.py chat1
+chat2". In another shell, call "minchat.py chat2 chat1".
+
+import sys
+from lcas.Transport import Transport
+
+myname = sys.argv[1]
+remotename = sys.argv[2]
+
+t = Transport(myname)
+t.subscribe(remotename, lambda tuple: print('Got', tuple))
+
+while True:
+    t.send(remotename, input())
+
+----------------------------------------------------------------------
+API
+
+# Create a Transport object. Set the name of this agent to myname.
+# Optionally set the Pyre discovery port and a prefix that gets added
+# to all Pyre channel names. This call will also start a new thread
+# that listens on the Pyre channels for new messages.
+t = Transport(myname, port=5670, prefix='')
+
+# Send object to the agent who named itself destname. If no agent
+# named destname is listening for messages from t.name, the call
+# will do nothing. The object can be any python object that can be
+# represented in JSON (e.g. lists and dicts of strings and numbers).
+t.send(destname, object)
+
+# Call callback every time an agent who named itself sourcename sends
+# an object to t.name. The callback must take one positional argument, 
+# the object, and can optionally take a keyword argument (e.g. **kw),
+# which will contain the name, ip address, and uuid of the sender and
+# a time stamp (name, ip, uuid, datetime). The callback is called in
+# the thread used to listen on the network, so it should not block
+# or take too long to run. If you need the callback to block or run
+# for a long time, start a new thread in the callback. There is only
+# one callback per name; subsequent calls to subscribe with the same
+# sourcename will raise a TransportError exception.
+t.subscribe(sourcename, callback)
+
+# Stop listening for messages from a Transport named sourcename.
+t.unsubscribe(sourcename)
+
+# Call callback every time ANY agent sends a message to t.name. The
+# callback follows the same conventions as Transport.subscribe() If
+# there are both a subscribe_all(cb1) and a subscribe(sourcename, cb2)
+# and sourcename sends an object, both cb1 and cb2 will be called.
+# Subsequent calls to subscribe_all will raise a TransportError exception.
+t.subscribe_all(callback)
+
+# Stop listening for messages from arbitrary Transports.
+t.unsubscribe_all()
+
+# Block waiting for a message from sourcename. Returns a python
+# namedtuple with object (the python object sent), uuid, name, ip
+# (uuid, name, and ip address of the sender), and datetime (a
+# timestamp of when the message was received).
+nt = t.get(sourcename)
+
+# Exceptions all descend from TransportError. It stores an
+# error message string (msg) and a Transport object (transport)
+#
+# TransportProtocolError is raised if unexpected or malformed
+# messages are received by a Transport.
+#
+# TransportSecurityError is raised if a message is unauthorized.
+# Currently, this is checked only via the sender's IP address in
+# the function Transport.is_valid_ip()
+
+----------------------------------------------------------------------
+----------------------------------------------------------------------
