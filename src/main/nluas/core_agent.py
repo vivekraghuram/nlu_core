@@ -31,6 +31,7 @@ class CoreAgent(object):
 			self.federation = "FED1"
 
 	def initialize(self, args):
+		print(args)
 		self.name = args.name
 		self.address = "{}_{}".format(self.federation, self.name)
 		self.transport = Transport(self.address)

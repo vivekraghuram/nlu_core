@@ -95,4 +95,4 @@ class CoreProblemSolver(CoreAgent):
 		return False
 
 if __name__ == '__main__':
-	ps = CoreProblemSolver(sys.argv)
+	ps = CoreProblemSolver(sys.argv[1:])
