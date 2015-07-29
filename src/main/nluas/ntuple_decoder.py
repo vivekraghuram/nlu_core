@@ -35,3 +35,4 @@ class NtupleDecoder(object):
 			for key, value in param.__dict__.items():
 				if value:
 					print("{}{}{}: {}".format(Color.BOLD, key, Color.END, value))
+		print("\n")

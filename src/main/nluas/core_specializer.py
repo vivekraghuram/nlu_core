@@ -7,13 +7,14 @@ The Core Specializer performs some basic operations in converting a SemSpec to a
 
 from nluas.specializer_utils import TemplateSpecializer, UtilitySpecializer, updated, ReferentResolutionException, FeatureStructException,MoodException
 from nluas.utils import *
+import pickle
 
 
 class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
-    def __init__(self):
+    def __init__(self, analyzer_port):
 
-        UtilitySpecializer.__init__(self)
+        UtilitySpecializer.__init__(self, analyzer_port)
         TemplateSpecializer.__init__(self)
 
         self.simple_processes = {'MotionPath': self.params_for_motionPath,
@@ -119,6 +120,9 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         #params = updated(d, action = process.actionary.type()) #process.protagonist.ontological_category.type())
         if self.analyzer.issubtype('SCHEMA', prop.type(), 'PropertyModifier'):
             a = {str(prop.property.type()): prop.value.type()}#, 'type': 'property'}
+            a['negated'] = False
+            if "negated" in prop.__dir__() and prop.negated.type() == "yes":
+                a['negated'] = True
             params.update(predication = a)
         elif self.analyzer.issubtype('SCHEMA', prop.type(), 'RefIdentity'):
             a = {'identical': {'objectDescriptor': self.get_objectDescriptor(prop.second)} }
@@ -405,11 +409,11 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
         if self.debug_mode:
             print(Struct(ntuple))
-            dumpfile = open('src/main/pickled.p', 'ab')
-            pickle.dump(Struct(ntuple), dumpfile)
-            dumpfile.close()
+            #dumpfile = open('src/main/pickled.p', 'ab')
+            #pickle.dump(Struct(ntuple), dumpfile)
+            #dumpfile.close()
             #dumpfile2 = open('src/main/move')
-            self._output.write("\n\n{0} \n{1} \n{2}".format(mood, self._sentence, str(Struct(ntuple))))
+            #self._output.write("\n\n{0} \n{1} \n{2}".format(mood, self._sentence, str(Struct(ntuple))))
         return Struct(ntuple)
 
     def specialize_Conditional_Declarative(self, fs):

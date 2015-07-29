@@ -14,6 +14,8 @@ from utils import interpreter
 from pprint import pprint
 from xmlrpclib import Fault
 import time
+from threading import Thread
+
 
 # Possibly change this for your system
 dll = {'linux': '/jre/lib/amd64/server/libjvm.so', 
@@ -41,11 +43,14 @@ except ImportError:
     from compling.gui.AnalyzerPrefs import AP
 
 
+
+
 class Analyzer(object):
     def __init__(self, prefs):
         self.analyzer = ECGAnalyzer(prefs)
         self.grammar = self.analyzer.grammar
         self.server = None
+
 
     def get_mappings(self):
         mappings = self.analyzer.getMappings()
@@ -183,10 +188,23 @@ def main(args):
     display('Starting up Analyzer ... ', term='')
     start = time.time()
     analyzer = Analyzer(args[1])
+
+    if len(args) > 2:
+        host = args[2]
+        port = int(args[3])
+    else:
+        host = "localhost"
+        port = 8090
     end = time.time()
     #usage_time(start, end, analyzer)
-    serve = server(analyzer)
-    analyzer.server = serve
+    try:
+        server_thread = Thread(target=server, kwargs={'obj': analyzer, 'host': host, 'port': port})
+        serve = server_thread.start()
+        #serve = server(analyzer, host, port)
+        analyzer.server = serve
+    except Exception, e:
+        print(e)
+        print "Address " + host + ":" + str(port) + " is already in use. Using Analyzer on existing server. Kill that process to restart with a new Analyzer." 
 
 def test_remote(sentence='Robot1, move to location 1 2!'):
     from feature import as_featurestruct
@@ -219,6 +237,6 @@ if __name__ == '__main__':
     elif '-l' in sys.argv:
         test_local(*sys.argv[2:3])
     else:
-        if len(sys.argv) != 2:
+        if len(sys.argv) < 2:
             usage()
         main(sys.argv)

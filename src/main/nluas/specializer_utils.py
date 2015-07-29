@@ -73,10 +73,10 @@ class MoodException(FeatureStructException):
 
 
 class UtilitySpecializer(DebuggingSpecializer):
-    def __init__(self):
+    def __init__(self, analyzer):
         self._stacked = []
         DebuggingSpecializer.__init__(self)
-        self.analyzer = Analyzer('http://localhost:8090')
+        self.analyzer = analyzer
         #self.mapping_reader = MappingReader()
         #self.mapping_reader.read_file(self.analyzer.get_mapping_path())
         self.mappings = self.analyzer.get_mappings()
@@ -163,7 +163,10 @@ class UtilitySpecializer(DebuggingSpecializer):
                 if filler.typesystem() == 'SCHEMA':
                     if self.analyzer.issubtype('SCHEMA', filler.type(), 'PropertyModifier'):
                         if filler.modifiedThing.index() == goal.index():
-                            v = filler.value.type()
+                            returned['negated'] = False
+                            if "negated" in filler.__dir__() and filler.negated.type() == "yes":
+                                returned['negated'] = True
+                            v = filler.value.type()   
                             if v == "scale":
                                 returned[str(filler.property.type())] = float(filler.value)
                             #if v in self.mappings:

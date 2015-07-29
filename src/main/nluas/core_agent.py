@@ -2,19 +2,8 @@ from nluas.Transport import *
 import argparse
 import os
 import sys
+import logging
 
-"""
-federation = os.environ.get("ECG_FED")
-if federation is None:
-	federation = "FED1"
-parser = argparse.ArgumentParser()
-parser.add_argument("name", type=str, help="assign a name to this agent")
-parser.add_argument("-logfile", type=str, help="indicate logfile path for logging output")
-parser.add_argument("-loglevel", type=str, help="indicate loglevel for logging output: warn, debug, error")
-parser.add_argument("-logagent", type=str, help="indicate agent responsible for logging output")
-args = parser.parse_known_args(sys.argv)
-#print(args)
-"""
 
 class CoreAgent(object):
 
@@ -25,13 +14,14 @@ class CoreAgent(object):
 		self.setup_federation()
 		self.initialize(args[0])
 
+
+
 	def setup_federation(self):
 		self.federation = os.environ.get("ECG_FED")
 		if self.federation is None:
 			self.federation = "FED1"
 
 	def initialize(self, args):
-		print(args)
 		self.name = args.name
 		self.address = "{}_{}".format(self.federation, self.name)
 		self.transport = Transport(self.address)
@@ -46,6 +36,11 @@ class CoreAgent(object):
 		parser.add_argument("-loglevel", type=str, help="indicate loglevel for logging output: warn, debug, error")
 		parser.add_argument("-logagent", type=str, help="indicate agent responsible for logging output")
 		return parser
+
+	def close(self):
+		#self.transport.join()
+		print("Transport needs a QUIT procedure.")
+		sys.exit()
 
 
 	def callback(self, ntuple):
