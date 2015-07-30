@@ -169,7 +169,7 @@ def dfs(name, slot, parent, seen):
 def server(obj, host='localhost', port=8090):
     server = SimpleXMLRPCServer((host, port), allow_none=True, logRequests=False, encoding='utf-8')
     server.register_instance(obj)
-    display('server ready (listening to http://%s:%d/).', host, port)
+    #display('server ready (listening to http://%s:%d/).', host, port)
     server.serve_forever()
     return server  # Added
 
@@ -185,7 +185,7 @@ def usage_time(start, end, analyzer):
 
 def main(args):
     display(interpreter())
-    display('Starting up Analyzer ... ', term='')
+    #display('Starting up Analyzer ... ', term='')
     start = time.time()
     analyzer = Analyzer(args[1])
     end = time.time()
@@ -193,12 +193,11 @@ def main(args):
     try:
         #server_thread = Thread(target=server, kwargs={'obj': analyzer, 'host': host, 'port': port})
         #serve = server_thread.start()
-        serve = server(analyzer, host, port)
+        serve = server(analyzer)
         analyzer.server = serve
-
     except Exception, e:
         print(e)
-        print "Address " + host + ":" + str(port) + " is already in use. Using Analyzer on existing server. Kill that process to restart with a new Analyzer." 
+        #print "Address " + host + ":" + str(port) + " is already in use. Using Analyzer on existing server. Kill that process to restart with a new Analyzer." 
 
 def test_remote(sentence ='Robot1, move to location 1 2!'):
     from feature import as_featurestruct
