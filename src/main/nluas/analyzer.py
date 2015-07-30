@@ -167,7 +167,7 @@ def dfs(name, slot, parent, seen):
     yield parent.slotIndex if parent else -1, name, slot.slotIndex
    
 def server(obj, host='localhost', port=8090):
-    server = SimpleXMLRPCServer((host, port), allow_none=True, encoding='utf-8')
+    server = SimpleXMLRPCServer((host, port), allow_none=True, logRequests=False, encoding='utf-8')
     server.register_instance(obj)
     display('server ready (listening to http://%s:%d/).', host, port)
     server.serve_forever()
@@ -191,18 +191,11 @@ def main(args):
     end = time.time()
     #usage_time(start, end, analyzer)
     try:
-<<<<<<< HEAD
         #server_thread = Thread(target=server, kwargs={'obj': analyzer, 'host': host, 'port': port})
         #serve = server_thread.start()
         serve = server(analyzer, host, port)
         analyzer.server = serve
-=======
-        server_thread = Thread(target=server, kwargs={'obj': analyzer})
-        #serve = server_thread.start()
-        server_thread.run()
-        #serve = server(analyzer)
-        #analyzer.server = serve
->>>>>>> a0b9784902f8697dcb7af34b4899eb3c3fe9e42f
+
     except Exception, e:
         print(e)
         print "Address " + host + ":" + str(port) + " is already in use. Using Analyzer on existing server. Kill that process to restart with a new Analyzer." 
