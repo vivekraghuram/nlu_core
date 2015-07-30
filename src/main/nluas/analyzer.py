@@ -198,15 +198,15 @@ def main(args):
     end = time.time()
     #usage_time(start, end, analyzer)
     try:
-        server_thread = Thread(target=server, kwargs={'obj': analyzer, 'host': host, 'port': port})
-        serve = server_thread.start()
-        #serve = server(analyzer, host, port)
+        #server_thread = Thread(target=server, kwargs={'obj': analyzer, 'host': host, 'port': port})
+        #serve = server_thread.start()
+        serve = server(analyzer, host, port)
         analyzer.server = serve
     except Exception, e:
         print(e)
         print "Address " + host + ":" + str(port) + " is already in use. Using Analyzer on existing server. Kill that process to restart with a new Analyzer." 
 
-def test_remote(sentence='Robot1, move to location 1 2!'):
+def test_remote(sentence ='Robot1, move to location 1 2!'):
     from feature import as_featurestruct
     a = ServerProxy('http://localhost:8090')
     d = a.parse(sentence)

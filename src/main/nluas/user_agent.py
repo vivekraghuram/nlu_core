@@ -7,12 +7,17 @@ from nluas.spell_checker import *
 import sys
 import time
 
+class WaitingException(Exception):
+    def __init__(self, message):
+        self.message = message
+
 class UserAgent(CoreAgent):
     def __init__(self, args):
-        CoreAgent.__init__(self, args)
-        self.ui_parser = self.setup_ui_parser()
-        #self.analyzer_port = self.unknown[0]
+        #self.ui_parser = self.setup_ui_parser()
         self.initialize_UI()
+        CoreAgent.__init__(self, args)
+        
+        #self.analyzer_port = self.unknown[0]
         self.solve_destination = "{}_{}".format(self.federation, "ProblemSolver")
 
 
@@ -23,15 +28,16 @@ class UserAgent(CoreAgent):
         return parser
 
     def initialize_UI(self):
-        args = self.ui_parser.parse_known_args(self.unknown)
-        self.analyzer_port = args[0].port
+        #args = self.ui_parser.parse_known_args(self.unknown)
+        #self.analyzer_port = args[0].port
+        self.analyzer_port = "http://localhost:8090"
         try:
             self.analyzer = Analyzer(self.analyzer_port)
             self.specializer=CoreSpecializer(self.analyzer)
         except ConnectionRefusedError as e:
-            print(e)
-            print("The analyzer_port address provided refused a connection: {}".format(self.analyzer_port))
-            sys.exit()
+            #print(e)
+            message = "The analyzer_port address provided refused a connection: {}".format(self.analyzer_port)
+            raise WaitingException(message)
         self.decoder = NtupleDecoder()
         self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
 
