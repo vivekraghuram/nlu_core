@@ -16,7 +16,7 @@ class UserAgent(CoreAgent):
         #self.ui_parser = self.setup_ui_parser()
         self.initialize_UI()
         CoreAgent.__init__(self, args)
-        
+        #self.ui_parser = self.setup_ui_parser()
         #self.analyzer_port = self.unknown[0]
         self.solve_destination = "{}_{}".format(self.federation, "ProblemSolver")
 

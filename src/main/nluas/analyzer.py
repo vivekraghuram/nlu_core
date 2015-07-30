@@ -188,20 +188,21 @@ def main(args):
     display('Starting up Analyzer ... ', term='')
     start = time.time()
     analyzer = Analyzer(args[1])
-
-    if len(args) > 2:
-        host = args[2]
-        port = int(args[3])
-    else:
-        host = "localhost"
-        port = 8090
     end = time.time()
     #usage_time(start, end, analyzer)
     try:
+<<<<<<< HEAD
         #server_thread = Thread(target=server, kwargs={'obj': analyzer, 'host': host, 'port': port})
         #serve = server_thread.start()
         serve = server(analyzer, host, port)
         analyzer.server = serve
+=======
+        server_thread = Thread(target=server, kwargs={'obj': analyzer})
+        #serve = server_thread.start()
+        server_thread.run()
+        #serve = server(analyzer)
+        #analyzer.server = serve
+>>>>>>> a0b9784902f8697dcb7af34b4899eb3c3fe9e42f
     except Exception, e:
         print(e)
         print "Address " + host + ":" + str(port) + " is already in use. Using Analyzer on existing server. Kill that process to restart with a new Analyzer." 
@@ -237,6 +238,6 @@ if __name__ == '__main__':
     elif '-l' in sys.argv:
         test_local(*sys.argv[2:3])
     else:
-        if len(sys.argv) < 2:
+        if len(sys.argv) != 2:
             usage()
         main(sys.argv)
