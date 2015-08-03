@@ -1,4 +1,4 @@
-# nlu_core
+# NLU CORE
 
 This module contains "core" code for our agent-based full-path NLU system. 
 The core code is all located in src/main/nluas, and the setup/config files
@@ -16,4 +16,8 @@ code from the "nluas" directory. A basic configuration requires at least:
 this into an "n-tuple".
 
 * ProblemSolver: Receives an n-tuple from the AgentUI, which it uses to solve a problem
-in the application domain (e.g., robotics).
+in the application domain (e.g., robotics).  
+
+Developers can add other modules/Agents by subclassing the CoreAgent module, or by making
+more refined AgentUI/ProblemSolver modules, which already subclass CoreAgent. This will inherit
+the Transport mechanism (currently uses Pyre), as well as the configuration/setup parser (ArgParser).
