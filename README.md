@@ -20,4 +20,4 @@ in the application domain (e.g., robotics).
 
 Developers can add other modules/Agents by subclassing the CoreAgent module, or by making
 more refined AgentUI/ProblemSolver modules, which already subclass CoreAgent. This will inherit
-the Transport mechanism (currently uses Pyre), as well as the configuration/setup parser (ArgParser).
+the Transport mechanism (see api.txt), as well as the configuration/setup parser (ArgParser).
