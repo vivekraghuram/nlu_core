@@ -257,7 +257,6 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
     # Dispatches "process" to a function to fill in template, depending on process type. Returns parameters.
     def params_for_simple(self, process, template):
         if template == self._WH:
-            print(repr(process.protagonist))
             if hasattr(process.protagonist, "specificWh"):
                 template['specificWh'] = process.protagonist.specificWh.type()
                 if template['specificWh'] == "where":
@@ -312,7 +311,6 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
             yield self.causalProcess(process, param_name)
         else:
             params = getattr(self, param_name)
-            print(param_name)
             yield self.params_for_simple(process, params)  # EXECUTE is default 
     
     def make_parameters(self, fs):

@@ -23,6 +23,7 @@ from nluas.ntuple_decoder import *
 from nluas.core_agent import *
 import random
 import sys
+import json
 
 
 class CoreProblemSolver(CoreAgent):
@@ -45,21 +46,31 @@ class CoreProblemSolver(CoreAgent):
 	def callback(self, ntuple):
 		self.solve(ntuple)
 
-	def clarify(self, ntuple):
+	def request_clarification(self, ntuple, message="This ntuple requires clarification."):
 		new = self.decoder.convert_to_JSON(ntuple)
-		self.transport.send(self.ui_address, new)
+		print(message)
+		request = {'ntuple': ntuple, 'message': message, 'type': 'clarification'}
+		self.transport.send(self.ui_address, json.dumps(request))
+
+	def identification_failure(self, message):
+		request = {'type': 'failure', 'message': message}
+		self.transport.send(self.ui_address, json.dumps(request))
 
 	def solve(self, json_ntuple):
 		ntuple = self.decoder.convert_JSON_to_ntuple(json_ntuple)
 		if self.check_for_clarification(ntuple):
-			self.clarify(ntuple=ntuple)
+			self.request_clarification(ntuple=ntuple)
 		else:
+			self.ntuple = ntuple
 			predicate_type = ntuple.predicate_type
 			try:
 				dispatch = getattr(self, "solve_%s" %predicate_type)
 				dispatch(ntuple)
-			except AttributeError:
-				print("I cannot solve a(n) {}.".format(predicate_type))
+			except AttributeError as e:
+				print(e)
+				message = "I cannot solve a(n) {}.".format(predicate_type)
+				self.identification_failure(message)
+				
 
 	def solve_command(self, ntuple):
 		self.decoder.pprint_ntuple(ntuple)
@@ -75,18 +86,20 @@ class CoreProblemSolver(CoreAgent):
 
 	def solve_conditional_declarative(self, ntuple):
 		self.decoder.pprint_ntuple(ntuple)
-		
 
-	def route_action(self, parameters):
+	def route_action(self, parameters, predicate):
 		action = parameters.action
 		try:
-			dispatch = getattr(self, "solve_%s"%action)
+			dispatch = getattr(self, "{}_{}".format(predicate, action))
 			dispatch(parameters)
-		except AttributeError:
-			print("I cannot solve the '{}' action".format(action))
+		except AttributeError as e:
+			print(e)
+			message = "I cannot solve the '{}' action".format(action)
+			self.identification_failure(message)
 
 	def close(self):
 		return
+
 
 	def check_for_clarification(self, ntuple):
 		""" Will need to be replaced by a process that checks whether ntuple needs clarification.

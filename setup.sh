@@ -7,6 +7,8 @@
 #sh starter.sh && python3 src/main/prog2.py AgentUI &
 export ECG_FED=FED1
 python3 src/main/solver.py ProblemSolver &
+export PID=$!
+echo "PS" $PID
 sh ui_setup.sh
 #python3 src/main/prog2.py AgentUI
 

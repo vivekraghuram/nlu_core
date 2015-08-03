@@ -31,13 +31,17 @@ class UserAgent(CoreAgent):
         #args = self.ui_parser.parse_known_args(self.unknown)
         #self.analyzer_port = args[0].port
         self.analyzer_port = "http://localhost:8090"
-        try:
-            self.analyzer = Analyzer(self.analyzer_port)
-            self.specializer=CoreSpecializer(self.analyzer)
-        except ConnectionRefusedError as e:
-            #print(e)
-            message = "The analyzer_port address provided refused a connection: {}".format(self.analyzer_port)
-            raise WaitingException(message)
+        connected, printed = False, False
+        while not connected:
+            try:
+                self.analyzer = Analyzer(self.analyzer_port)
+                self.specializer=CoreSpecializer(self.analyzer)
+                connected = True
+            except ConnectionRefusedError as e:
+                if not printed:
+                    message = "The analyzer_port address provided refused a connection: {}".format(self.analyzer_port)
+                    print(message)
+                    printed = True
         self.decoder = NtupleDecoder()
         self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
 
@@ -60,6 +64,12 @@ class UserAgent(CoreAgent):
 
     def callback(self, ntuple):
         print("Clarification requested.")
+        call_type = ntuple['type']
+        if call_type == "failure":
+            print(ntuple['message'])
+        elif call_type == "clarification":
+            print(ntuple['message'])
+            print(ntuple['ntuple'])
         #print(ntuple)
         decoded = self.decoder.convert_JSON_to_ntuple(ntuple)
         #print(decoded)
@@ -101,7 +111,7 @@ class UserAgent(CoreAgent):
             if checked != msg:
                 print(self.spell_checker.print_modified(table['checked'], table['modified']))
                 affirm = input("Is this what you meant? (y/n) > ")
-                if affirm[0].lower() == "y":
+                if affirm and affirm[0].lower() == "y":
                     self.process_input(checked)
                 else:
                     return
