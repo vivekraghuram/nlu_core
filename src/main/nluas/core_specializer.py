@@ -201,7 +201,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
             params.update(control_state=self.eventProcess.stageRole.type())
         return params  
 
-    def causalProcess(self, process):
+    def causalProcess(self, process, param_name="_execute"):
         params = updated(self._cause, action = process.actionary.type())
         if hasattr(process.protagonist, 'referent') and process.protagonist.referent.type():
             #params.update(causer = {'objectDescriptor': self.get_objectDescriptor(process.causalAgent)})
@@ -218,8 +218,9 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         if hasattr(process, "p_features"):
             params = updated(params, p_features=self.get_process_features(process.p_features))
         #cp = params_for_compound(process.process1)
-        cp = self.params_for_simple(process.process1, self._execute)
-        ap = self.params_for_simple(process.process2, self._execute)
+        param_type = getattr(self, param_name)
+        cp = self.params_for_simple(process.process1, param_type)
+        ap = self.params_for_simple(process.process2, param_type)
         if cp is None or ap is None:
             return None
         params.update(causalProcess = Struct(cp))
@@ -256,9 +257,11 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
     # Dispatches "process" to a function to fill in template, depending on process type. Returns parameters.
     def params_for_simple(self, process, template):
         if template == self._WH:
-            template['specificWh'] = process.protagonist.specificWh.type()
-            if template['specificWh'] == "where":
-                return self.params_for_where(process, template)
+            print(repr(process.protagonist))
+            if hasattr(process.protagonist, "specificWh"):
+                template['specificWh'] = process.protagonist.specificWh.type()
+                if template['specificWh'] == "where":
+                    return self.params_for_where(process, template)
 
         params = updated(template, action = self.get_actionary(process))
 
@@ -304,11 +307,12 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                     else:
                         yield p
         elif self.analyzer.issubtype("SCHEMA", process.type(), "CauseEffect"):
-            yield self.causalProcess(process)
+            yield self.causalProcess(process, param_name)
         elif process.type() == 'CauseEffectProcess':
-            yield self.causalProcess(process)
+            yield self.causalProcess(process, param_name)
         else:
             params = getattr(self, param_name)
+            print(param_name)
             yield self.params_for_simple(process, params)  # EXECUTE is default 
     
     def make_parameters(self, fs):

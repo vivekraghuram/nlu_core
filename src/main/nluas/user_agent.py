@@ -4,8 +4,8 @@ from nluas.analyzer_proxy import *
 from nluas.core_specializer import *
 from nluas.ntuple_decoder import NtupleDecoder
 from nluas.spell_checker import *
-import sys
-import time
+import sys, traceback, time
+
 
 class WaitingException(Exception):
     def __init__(self, message):
@@ -54,6 +54,7 @@ class UserAgent(CoreAgent):
                     break
                 except Exception as e:
                     print(e)
+                    traceback.print_exc()
         except Exception as e:
             print(e)
 
