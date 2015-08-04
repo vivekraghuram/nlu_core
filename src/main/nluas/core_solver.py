@@ -48,7 +48,6 @@ class CoreProblemSolver(CoreAgent):
 
 	def request_clarification(self, ntuple, message="This ntuple requires clarification."):
 		new = self.decoder.convert_to_JSON(ntuple)
-		print(message)
 		request = {'ntuple': ntuple, 'message': message, 'type': 'clarification'}
 		self.transport.send(self.ui_address, json.dumps(request))
 
