@@ -1,6 +1,10 @@
 """
 A RobotProblemSolver that extends the CoreProblemSolver in the NLUAS module.
 
+Actions, like "move", should be named by predicate + action type.
+Thus: query_move, command_move, etc.
+Or: query_be, command_be, etc.
+
 Questions:
 (1) Keep in mind: should we route based on actions? E.g., "move to the blue box?"
 This was how it was done previously, but what about queries/assertions: "he moved to the blue box",
@@ -96,7 +100,6 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         return dict(x=newpos[0], y=newpos[1], z=newpos[2])
 
 
-
     def query_move(self, parameters):
         return None
 
@@ -113,7 +116,6 @@ class BasicRobotProblemSolver(CoreProblemSolver):
             if hasattr(getattr(self.world, item), 'type') and getattr(getattr(self.world, item), 'type') == obj_type:
                 objs += [getattr(self.world, item)]
         
-        #print(len(objs))
         copy = []
         if 'color' in description:
             color = description['color']

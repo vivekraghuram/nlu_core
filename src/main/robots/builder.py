@@ -27,8 +27,8 @@ def build(subsystem):
             
 
         def morse():
-            from morse.simulator import Robot
-            from morse.simulator import Box
+            from robots.morse.simulator import Robot
+            from robots.morse.simulator import Box
             robot1_instance=Robot('robot1_instance')
             robot2_instance=Robot('robot2_instance')
             world = Worlds.scene()
