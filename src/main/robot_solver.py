@@ -23,6 +23,7 @@ from nluas.utils import *
 from robots.builder import *
 import sys
 import random
+from math import sqrt
 
 class BasicRobotProblemSolver(CoreProblemSolver):
     def __init__(self, args):
@@ -35,9 +36,21 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         # This depends on how size is represented in the grammar.
         self._size_cutoffs = {'big': 2,
                               'small': 1}
+        self._home = None
+        self._distance_multipliers = {'box': 1.3,
+                                    'robot': -.2}
+        self._distance_threshold = 4
 
+
+    def set_home(self, ntuple):
+        if ntuple.parameters[0].kind == "cause":
+            prot = ntuple.parameters[0].causer
+        else:
+            prot = ntuple.parameters[0].protagonist
+        self._home = self.get_described_object(prot['objectDescriptor']).pos
 
     def solve_command(self, ntuple):
+        self.set_home(ntuple)
         for param in ntuple.parameters:
             self.route_action(param, "command")
 
@@ -103,7 +116,55 @@ class BasicRobotProblemSolver(CoreProblemSolver):
     def query_move(self, parameters):
         return None
 
+    def distance(self, a, b):
+        return sqrt(pow((a.pos.x-b.pos.x ),2) + pow((a.pos.y-b.pos.y ),2) ) 
+
+    def get_near(self, candidates, obj):
+        locations = []
+        for candidate in candidates:
+            if self.is_near(candidate, obj):
+                locations.append(candidate)
+        return locations
+
+    def get_threshold(self, first, second):
+        multiplier = self._distance_multipliers[first.type] + self._distance_multipliers[second.type]
+        return self._distance_threshold * multiplier
+
+    def is_near(self, first, second):
+        """ Could be redone. Essentially an arbitrary threshold. Could be rewritten
+        to evaluate "near" in a more relativistic way. 
+        Could also take size into account. """
+        if first == second:
+            return False
+        t = self.get_threshold(first, second)
+        return self.distance(first, second) <= self.get_threshold(first, second)
+
+    def get_described_locations(self, candidates, description):
+        obj = self.get_described_object(description['objectDescriptor'])
+        if obj:
+            locations = []
+            if description['relation'] == 'near':
+                locations = self.get_near(candidates, obj)
+            elif description['relation'] == 'behind':
+                pass
+            return locations
+        else:
+            return []
+
+
+
+
+    def get_described_location(self, candidates, description, multiple=False):
+        locations = self.get_described_locations(candidates, description)
+        if multiple:
+            return locations
+        if len(locations) != 1:
+            return []
+        else:
+            return locations[0]
+
     def get_described_objects(self, description, multiple=False):
+
         if 'referent' in description:
             if hasattr(self.world, description['referent']):
                 return [getattr(self.world, description['referent'])]
@@ -115,22 +176,23 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         for item in self.world.__dict__.keys():
             if hasattr(getattr(self.world, item), 'type') and getattr(getattr(self.world, item), 'type') == obj_type:
                 objs += [getattr(self.world, item)]
-        
         copy = []
         if 'color' in description:
             color = description['color']
             for obj in objs:
                 if obj.color == color:
                     copy.append(obj)
+            objs = copy
 
-        objs = copy
+
         kind = description['kind']
         if 'size' in description:
             size = description['size']
             objs = self.evaluate_feature(size, kind, objs)
 
         if 'locationDescriptor' in description:
-            pass
+            #pass
+            objs = self.get_described_location(objs, description['locationDescriptor'], multiple=multiple)
             # Get locations...
 
         return objs
@@ -255,3 +317,5 @@ if __name__ == "__main__":
     sample3 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'green', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
     sample4 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'blue', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
     sample5 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'red', 'size': 'small', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
+    sample6 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'gender': 'genderValues', 'type': 'box', 'locationDescriptor': {'relation': 'near', 'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'pink', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}}}})], predicate_type='command')
+    sample7 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'gender': 'genderValues', 'type': 'box', 'locationDescriptor': {'relation': 'near', 'objectDescriptor': {'referent': 'robot2_instance', 'type': 'robot'}}}})], predicate_type='command')

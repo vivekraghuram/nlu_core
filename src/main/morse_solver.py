@@ -4,15 +4,36 @@ A Morse Problem Solver (extends BasicRobotProblemSolver).
 """
 
 from robot_solver import *
+from robots.avoidance import AvoidanceSolver
 
-class MorseRobotProblemSolver(BasicRobotProblemSolver):
+class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSolver):
     def __init__(self, args):
         BasicRobotProblemSolver.__init__(self, args)
+        TwoDimensionalAvoidanceSolver.__init__(self)
         self.world = build('morse')
 
+    def move(self, mover, x, y, z, speed, tolerance=2, collide=False):
+        if collide:
+            new, interrupted = mover.move_np(x=x, y=y, z=z, speed=speed, tolerance=tolerance)
+        else:
+            origin = mover.pos 
+            destination = [x, y]  #z?
+            line = self.compute_line(origin, destination, mover)
+            smoothed = self.smooth_trajectory(line)
+            for point in smoothed:
+                new, interrupted = mover.move(x=point[0], y=point[1], z=0, speed=speed, tolerance=tolerance)
+                if interrupted:
+                    self.update_world(discovered=[new])
+                    self.move(mover, x, y, z, speed, tolerance, collide=False)
 
-    def move(self, mover, x, y, z, speed, tolerance=2):
-        mover.move(x=x, y=y, z=z, speed=speed, tolerance=tolerance)
+    def update_world(self, discovered=[]):
+        # Fill in later
+        # Could either use semantic camera of a robot, or the RPC method
+        pass
+
+
+
+
 
 if __name__ == "__main__":
     solver = MorseRobotProblemSolver(sys.argv[1:])

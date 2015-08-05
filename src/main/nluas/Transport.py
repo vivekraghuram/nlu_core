@@ -232,11 +232,9 @@ class Transport():
             event = self._pyre.recv()
             logger.debug('Transport %s-%s received event %s'%(self._pyre.uuid(), self._pyre.name(), event))
             eventtype = event[0].decode('utf-8')
-
             # Sender's uuid and name
             sid = uuid.UUID(bytes=event[1])
             name = event[2].decode('utf-8')
-
             # Make sure we've seen matching ENTER for all events
             if eventtype != 'ENTER' and sid not in self._uuid2ip:
                 raise TransportProtocolError(self, 'Received event %s with no matching ENTER.'%(event))
@@ -252,6 +250,8 @@ class Transport():
             elif eventtype == 'SHOUT':
                 channel = event[3].decode('utf-8')
                 message = event[4].decode('utf-8')
+                if channel == "GLOBAL" and message == "\"QUIT\"":
+                    self._run = False
                 self._SHOUT(sid, name, channel, message)
             elif eventtype == 'WHISPER':
                 message = event[3].decode('utf-8')

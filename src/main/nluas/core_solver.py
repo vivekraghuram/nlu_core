@@ -32,6 +32,7 @@ class CoreProblemSolver(CoreAgent):
 		self.ntuple = None
 		self.decoder = NtupleDecoder()
 		CoreAgent.__init__(self, args)
+		self.world = []
 		self.solver_parser = self.setup_solver_parser()
 		args = self.solver_parser.parse_args(self.unknown)
 		self.complexity = args.complexity
@@ -65,11 +66,15 @@ class CoreProblemSolver(CoreAgent):
 			try:
 				dispatch = getattr(self, "solve_%s" %predicate_type)
 				dispatch(ntuple)
+				self.update_world()
 			except AttributeError as e:
 				print(e)
 				message = "I cannot solve a(n) {}.".format(predicate_type)
 				self.identification_failure(message)
 				
+	def update_world(self, discovered=[]):
+		for item in discovered:
+			self.world.append(item)
 
 	def solve_command(self, ntuple):
 		self.decoder.pprint_ntuple(ntuple)
