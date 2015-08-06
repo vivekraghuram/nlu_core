@@ -29,8 +29,8 @@ class Box(object):
 class Robot(object):
     """A simple controller for a Morse simulated robot.
     """
-    def __init__(self, name):
-        update(self, name=name, pos=Struct(x=0.0, y=0.0, z=0.0), simulator=Morse(), type="robot")
+    def __init__(self, name, size=1):
+        update(self, name=name, pos=Struct(x=0.0, y=0.0, z=0.0), simulator=Morse(), type="robot", size=size)
         q = "pose_"
         q += self.name
         inst = getattr(self.simulator, self.name)

@@ -5,7 +5,7 @@ The Core Specializer performs some basic operations in converting a SemSpec to a
 
 """
 
-from nluas.specializer_utils import TemplateSpecializer, UtilitySpecializer, updated, ReferentResolutionException, FeatureStructException,MoodException
+from nluas.specializer_utils import *
 from nluas.utils import *
 import pickle
 

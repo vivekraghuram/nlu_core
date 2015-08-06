@@ -214,6 +214,7 @@ class Transport():
             self._pyre.set_port(port)
 
         self._pyre.join(myname)
+        self._pyre.join("GLOBAL")
         self._pyre.start()
 
         # Dict of (UUIDs => IP addresses) that have sent a valid ENTER message
@@ -224,6 +225,10 @@ class Transport():
         self._readthread = threading.Thread(target=self._readworker)
         self._readthread.start()
     # __init__()
+
+    def quit_federation(self):
+        #self._pyre.
+        self._pyre.shouts("GLOBAL", "QUIT")
 
     # Handle pyre messages. Run in self._readthread
     def _readworker(self):
@@ -250,9 +255,7 @@ class Transport():
             elif eventtype == 'SHOUT':
                 channel = event[3].decode('utf-8')
                 message = event[4].decode('utf-8')
-                print(message)
                 if channel == "GLOBAL" and message == "QUIT":
-                    print("here")
                     self._run = False
                 self._SHOUT(sid, name, channel, message)
             elif eventtype == 'WHISPER':

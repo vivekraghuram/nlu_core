@@ -34,16 +34,23 @@ class UserAgent(CoreAgent):
         connected, printed = False, False
         while not connected:
             try:
-                self.analyzer = Analyzer(self.analyzer_port)
-                self.specializer=CoreSpecializer(self.analyzer)
+                self.initialize_analyzer()
+                self.initialize_specializer()
                 connected = True
             except ConnectionRefusedError as e:
                 if not printed:
                     message = "The analyzer_port address provided refused a connection: {}".format(self.analyzer_port)
                     print(message)
                     printed = True
+                time.sleep(1)
         self.decoder = NtupleDecoder()
         self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
+
+    def initialize_analyzer(self):
+        self.analyzer = Analyzer(self.analyzer_port)
+        
+    def initialize_specializer(self):
+        self.specializer=CoreSpecializer(self.analyzer)
 
     def process_input(self, msg):
         try:
@@ -51,6 +58,7 @@ class UserAgent(CoreAgent):
             for fs in semspecs:
                 try:
                     ntuple = self.specializer.specialize(fs)
+                    print(ntuple)
                     json_ntuple = self.decoder.convert_to_JSON(ntuple)
                     #if self.specializer.debug_mode:
                     #   self.write_file(json_ntuple, msg)
