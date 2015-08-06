@@ -250,7 +250,9 @@ class Transport():
             elif eventtype == 'SHOUT':
                 channel = event[3].decode('utf-8')
                 message = event[4].decode('utf-8')
-                if channel == "GLOBAL" and message == "\"QUIT\"":
+                print(message)
+                if channel == "GLOBAL" and message == "QUIT":
+                    print("here")
                     self._run = False
                 self._SHOUT(sid, name, channel, message)
             elif eventtype == 'WHISPER':
