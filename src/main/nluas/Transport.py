@@ -191,6 +191,19 @@ class Transport():
         return ret
     # get()
 
+    def quit_federation(self):
+        '''Send a quit message to all agents in this federation, and then close down the Transport.'''
+        self._pyre.shouts(self._globalchannel, u"QUIT")
+        self._run = False
+        # Wait for the readthread to finish
+        self._readthread.join()
+        # Tell Pyre to shut down
+        self._pyre.stop()
+
+    def is_running(self):
+        '''Return the status of this Transport. If the Transport isn't running, you should not send it messages and the callbacks will not be called.'''
+        return self._run
+
     ######################################################################
     # All private methods below here
 
@@ -206,15 +219,23 @@ class Transport():
         self._subscribe_all = None
 
         self._prefix = prefix
+
+        # Attach the federation name as a prefix to both this channel
+        # and the global channel. The global channel is currently
+        # just used for QUIT messages.
+
         if prefix is not None:
             myname = prefix + myname
+            self._globalchannel = prefix + "GLOBAL"
+        else:
+            self._globalchannel = "GLOBAL"
 
         self._pyre = Pyre(myname)
         if port is not None:
             self._pyre.set_port(port)
 
         self._pyre.join(myname)
-        self._pyre.join("GLOBAL")
+        self._pyre.join(self._globalchannel)
         self._pyre.start()
 
         # Dict of (UUIDs => IP addresses) that have sent a valid ENTER message
@@ -226,14 +247,26 @@ class Transport():
         self._readthread.start()
     # __init__()
 
-    def quit_federation(self):
-        #self._pyre.
-        self._pyre.shouts("GLOBAL", "QUIT")
-
     # Handle pyre messages. Run in self._readthread
     def _readworker(self):
         '''This method is called in a separate thread to handle messages sent over pyre. It dispataches to methods named for the pyre events (e.g. _ENTER).'''
+
+        # Set up a poller so recv doesn't block. Possibly not needed
+        # since we'll always get an event when the other agents quit,
+        # but just in case something goes wrong, we want to be sure to
+        # close down.
+
+        poller = zmq.Poller()
+        sock = self._pyre.socket()
+        poller.register(sock, zmq.POLLIN)
+
         while self._run:
+            # Wait until a message is received OR one second timeout.
+            items = dict(poller.poll(1000))
+            if not (sock in items and items[sock] == zmq.POLLIN):
+                # This should only happen if we time out.
+                continue
+            # There's an event waiting. Read and process it.
             event = self._pyre.recv()
             logger.debug('Transport %s-%s received event %s'%(self._pyre.uuid(), self._pyre.name(), event))
             eventtype = event[0].decode('utf-8')
@@ -255,9 +288,14 @@ class Transport():
             elif eventtype == 'SHOUT':
                 channel = event[3].decode('utf-8')
                 message = event[4].decode('utf-8')
-                if channel == "GLOBAL" and message == "QUIT":
+                if channel == self._globalchannel and message == "QUIT":
+                    # Set ourself to stop running, close down pyre, exit
+                    # worker thread.
                     self._run = False
-                self._SHOUT(sid, name, channel, message)
+                    self._pyre.stop()
+                    break
+                else:
+                    self._SHOUT(sid, name, channel, message)
             elif eventtype == 'WHISPER':
                 message = event[3].decode('utf-8')
                 self._WHISPER(sid, name, message)

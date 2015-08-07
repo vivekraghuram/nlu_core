@@ -58,7 +58,6 @@ class UserAgent(CoreAgent):
             for fs in semspecs:
                 try:
                     ntuple = self.specializer.specialize(fs)
-                    print(ntuple)
                     json_ntuple = self.decoder.convert_to_JSON(ntuple)
                     #if self.specializer.debug_mode:
                     #   self.write_file(json_ntuple, msg)
@@ -94,7 +93,8 @@ class UserAgent(CoreAgent):
             specialize = True
             msg = input("> ")
             if msg == "q":
-                self.close()
+                self.transport.quit_federation()
+                quit()
             elif msg == None or msg == "":
                 specialize = False
             elif msg.lower()[0] == 'd':

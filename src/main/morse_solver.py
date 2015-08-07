@@ -31,6 +31,11 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
         # Could either use semantic camera of a robot, or the RPC method
         pass
 
+    def getpos(self, inst):
+        instance =getattr(self.world, inst)
+        p = instance.pos
+        return (p.x, p.y, p.z) 
+
 
 
 

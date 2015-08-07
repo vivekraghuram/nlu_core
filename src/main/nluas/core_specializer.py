@@ -431,7 +431,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         specific = fs.m.content.profiledParticipant.specificWh.type()
         f = 'collection_of' if fs.m.content.profiledParticipant.number.type() == 'plural' else 'singleton'
         return dict(predicate_type='query',
-                    return_type='%s(class_reference)' % f if specific == 'what' else '%s(instance_reference)' % f)
+                    return_type='%s::class_reference' % f if specific == 'what' else '%s::instance_reference' % f)
 
     def specialize_Declarative(self, fs):
         return dict(predicate_type='assertion', return_type='error_descriptor')
