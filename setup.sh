@@ -5,7 +5,7 @@
 #screen -dmS "test3" python3 src/main/prog.py ProblemSolver -logfile=test
 #sh ui_setup.sh &
 #sh starter.sh && python3 src/main/prog2.py AgentUI &
-export ECG_FED=FED1
+export ECG_FED=FED2
 python3 src/main/robot_solver.py ProblemSolver &
 export PID=$!
 echo "PS" $PID

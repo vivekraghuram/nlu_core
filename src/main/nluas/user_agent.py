@@ -19,6 +19,7 @@ class UserAgent(CoreAgent):
         #self.ui_parser = self.setup_ui_parser()
         #self.analyzer_port = self.unknown[0]
         self.solve_destination = "{}_{}".format(self.federation, "ProblemSolver")
+        self.transport.subscribe(self.solve_destination, self.callback)
 
 
     def setup_ui_parser(self):
@@ -70,15 +71,15 @@ class UserAgent(CoreAgent):
             print(e)
 
     def callback(self, ntuple):
-        print("Clarification requested.")
+        ntuple = self.decoder.convert_JSON_to_ntuple(ntuple)
         call_type = ntuple['type']
         if call_type == "failure":
             print(ntuple['message'])
         elif call_type == "clarification":
             print(ntuple['message'])
-            print(ntuple['ntuple'])
+            #print(ntuple['ntuple'])
         #print(ntuple)
-        decoded = self.decoder.convert_JSON_to_ntuple(ntuple)
+        #decoded = self.decoder.convert_JSON_to_ntuple(ntuple)
         #print(decoded)
 
     def write_file(self, json_ntuple, msg):

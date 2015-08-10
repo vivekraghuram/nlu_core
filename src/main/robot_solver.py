@@ -387,7 +387,6 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         return str(attributes) + " " + str(ont)
 
     def query_be(self, parameters):
-        print(parameters)
         if hasattr(parameters, "specificWh"):
             return self.eval_wh(parameters, self.ntuple.return_type)
         return self.evaluate_condition(parameters)
@@ -395,13 +394,15 @@ class BasicRobotProblemSolver(CoreProblemSolver):
     def eval_wh(self, parameters, return_type):
         num, referentType = return_type.split("::")
         protagonist = self.get_described_object(parameters.protagonist['objectDescriptor'])
-        predication = parameters.predication
-        dispatch = getattr(self, "eval_{}".format(parameters.specificWh))
-        dispatch(protagonist, predication, num)
+        if protagonist:
+            predication = parameters.predication
+            dispatch = getattr(self, "eval_{}".format(parameters.specificWh))
+            dispatch(protagonist, predication, num)
+        else:
+            print("Eval_Wh error, no protagonist found.")
 
     def eval_which(self, protagonist, predication, num):
-        print(protagonist)
-        print(predication)
+        pass
 
 
 
