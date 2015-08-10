@@ -39,8 +39,8 @@ class BasicRobotProblemSolver(CoreProblemSolver):
                               'small': 1}
         self._home = None
         self._distance_multipliers = {'box': 1.3,
-                                    'robot': -.2}
-        self._distance_threshold = 4
+                                    'robot': .7}
+        self._distance_threshold = 8
 
 
     def set_home(self, ntuple):
@@ -182,8 +182,8 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         return locations
 
     def get_threshold(self, first, second):
-        multiplier = self._distance_multipliers[first.type] + self._distance_multipliers[second.type]
-        return self._distance_threshold * multiplier
+        multiplier = (self._distance_multipliers[first.type] * first.size) + (self._distance_multipliers[second.type] * second.size)
+        return self._distance_threshold + multiplier
 
     def is_near(self, first, second):
         """ Could be redone. Essentially an arbitrary threshold. Could be rewritten
@@ -191,8 +191,10 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         Could also take size into account. """
         if first == second:
             return False
-        t = self.get_threshold(first, second)
+        #t = self.get_threshold(first, second)
+        #print(t)
         return self.distance(first, second) <= self.get_threshold(first, second)
+
 
     def get_described_position(self, description, protagonist):
         """ Returns the position/location described, e.g. "into the room", "near the box".
@@ -228,6 +230,7 @@ class BasicRobotProblemSolver(CoreProblemSolver):
             new = [newx, newy]
         new.append(0)
         return new
+
 
 
 
@@ -428,6 +431,10 @@ if __name__ == "__main__":
     sample3 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'green', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
     sample4 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'blue', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
     sample5 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'red', 'size': 'small', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
+
+    sample6 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'gender': 'genderValues', 'type': 'box', 'locationDescriptor': {'relation': 'near', 'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'pink', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}}}})], predicate_type='command')
+    sample7 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance','size' : 1}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'gender': 'genderValues', 'type': 'box', 'locationDescriptor': {'relation': 'near', 'objectDescriptor': {'referent': 'robot2_instance', 'type': 'robot','size' : 1}}}})], predicate_type='command')
+
     #sample6 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'gender': 'genderValues', 'type': 'box', 'locationDescriptor': {'relation': 'near', 'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'green', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}}}})], predicate_type='command')
     #sample7 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'gender': 'genderValues', 'type': 'box', 'locationDescriptor': {'relation': 'near', 'objectDescriptor': {'referent': 'robot2_instance', 'type': 'robot'}}}})], predicate_type='command')
     sample8 = Struct(predicate_type='command', parameters=[Struct(affectedProcess={'direction': None, 'heading': 'north', 'control_state': 'ongoing', 'protagonist': {'objectDescriptor': {'negated': False, 'gender': 'genderValues', 'color': 'blue', 'type': 'box', 'kind': 'None', 'number': 'singular', 'givenness': 'uniquelyIdentifiable'}}, 'goal': None, 'action': 'move', 'kind': 'execute', 'speed': 0.5, 'collaborative': False, 'distance': {'units': 'square', 'value': 4}}, collaborative=False, action='push_move', kind='cause', p_features={'voice': 'active'}, causer={'objectDescriptor': {'referent': 'robot1_instance', 'type': 'robot'}}, causalProcess={'direction': None, 'heading': None, 'control_state': 'ongoing', 'protagonist': {'objectDescriptor': {'referent': 'robot1_instance', 'type': 'robot'}}, 'acted_upon': {'objectDescriptor': {'negated': False, 'gender': 'genderValues', 'color': 'blue', 'type': 'box', 'kind': 'None', 'number': 'singular', 'givenness': 'uniquelyIdentifiable'}}, 'goal': None, 'action': 'forceapplication', 'kind': 'execute', 'speed': 0.5, 'collaborative': False, 'distance': {'units': 'square', 'value': 4}})], return_type='error_descriptor')
@@ -435,3 +442,4 @@ if __name__ == "__main__":
     query1 = Struct(parameters=[Struct(protagonist={'objectDescriptor': {'gender': 'genderValues', 'number': 'singular', 'type': 'box', 'givenness': 'givennessValues'}}, kind='query', specificWh='which', p_features={'tense': 'present'}, predication={'negated': False, 'color': 'red'}, action='be')], predicate_type='query', return_type='singleton::instance_reference')
     query2 = Struct(parameters=[Struct(protagonist={'objectDescriptor': {'gender': 'genderValues', 'number': 'plural', 'type': 'box', 'givenness': 'givennessValues'}}, kind='query', specificWh='which', p_features={'tense': 'present'}, predication={'negated': False, 'color': 'red'}, action='be')], predicate_type='query', return_type='collection_of::instance_reference')
     solver.ntuple = query1
+

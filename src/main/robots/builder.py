@@ -38,8 +38,8 @@ def build(subsystem):
 
         @staticmethod
         def mock():
-            robot1_instance=Struct(name='robot1_instance', pos=Struct(x=0.0, y=0.0, z=0.0), type="robot")
-            robot2_instance=Struct(name='robot2_instance', pos=Struct(x=3.0, y=3.0, z=0.0), type="robot")
+            robot1_instance=Struct(name='robot1_instance', pos=Struct(x=0.0, y=0.0, z=0.0), type="robot", size=1)
+            robot2_instance=Struct(name='robot2_instance', pos=Struct(x=3.0, y=3.0, z=0.0), type="robot", size=1)
             world = Worlds.scene()
             setattr(world, 'robot1_instance', robot1_instance)
             setattr(world, 'robot2_instance', robot2_instance)
