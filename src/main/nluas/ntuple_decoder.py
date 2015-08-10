@@ -1,6 +1,7 @@
 from pprint import pprint
 from json import dumps, loads
-from nluas.feature import StructJSONEncoder 
+from nluas.feature import StructJSONEncoder
+from nluas.utils import Struct
 
 class Color(object):
    PURPLE = '\033[95m'

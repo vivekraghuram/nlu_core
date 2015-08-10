@@ -34,16 +34,23 @@ class UserAgent(CoreAgent):
         connected, printed = False, False
         while not connected:
             try:
-                self.analyzer = Analyzer(self.analyzer_port)
-                self.specializer=CoreSpecializer(self.analyzer)
+                self.initialize_analyzer()
+                self.initialize_specializer()
                 connected = True
             except ConnectionRefusedError as e:
                 if not printed:
                     message = "The analyzer_port address provided refused a connection: {}".format(self.analyzer_port)
                     print(message)
                     printed = True
+                time.sleep(1)
         self.decoder = NtupleDecoder()
         self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
+
+    def initialize_analyzer(self):
+        self.analyzer = Analyzer(self.analyzer_port)
+        
+    def initialize_specializer(self):
+        self.specializer=CoreSpecializer(self.analyzer)
 
     def process_input(self, msg):
         try:
@@ -86,7 +93,8 @@ class UserAgent(CoreAgent):
             specialize = True
             msg = input("> ")
             if msg == "q":
-                self.close()
+                self.transport.quit_federation()
+                quit()
             elif msg == None or msg == "":
                 specialize = False
             elif msg.lower()[0] == 'd':

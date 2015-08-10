@@ -38,6 +38,7 @@ class CoreProblemSolver(CoreAgent):
 		self.complexity = args.complexity
 		self.ui_address = "{}_{}".format(self.federation, "AgentUI")
 		self.transport.subscribe(self.ui_address, self.callback)
+		self._incapable = "I cannot do that yet."
 
 	def setup_solver_parser(self):
 		parser = argparse.ArgumentParser()
@@ -49,7 +50,7 @@ class CoreProblemSolver(CoreAgent):
 
 	def request_clarification(self, ntuple, message="This ntuple requires clarification."):
 		new = self.decoder.convert_to_JSON(ntuple)
-		request = {'ntuple': ntuple, 'message': message, 'type': 'clarification'}
+		request = {'ntuple': new, 'message': message, 'type': 'clarification'}
 		self.transport.send(self.ui_address, json.dumps(request))
 
 	def identification_failure(self, message):
