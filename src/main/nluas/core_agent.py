@@ -51,7 +51,3 @@ class CoreAgent(object):
 			self.transport.subscribe(port, self.callback)
 
 
-"""
-if __name__ == '__main__':
-	ca = CoreAgent(args.name, federation, args.logfile, args.loglevel, args.logagent)
-"""

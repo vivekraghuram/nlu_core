@@ -41,7 +41,7 @@ class UserAgent(CoreAgent):
             except ConnectionRefusedError as e:
                 if not printed:
                     message = "The analyzer_port address provided refused a connection: {}".format(self.analyzer_port)
-                    print(message)
+                    self.output_stream(message)
                     printed = True
                 time.sleep(1)
         self.decoder = NtupleDecoder()
@@ -65,19 +65,26 @@ class UserAgent(CoreAgent):
                     self.transport.send(self.solve_destination, json_ntuple)
                     break
                 except Exception as e:
-                    print(e)
+                    self.output_stream(e)
                     traceback.print_exc()
         except Exception as e:
             print(e)
+
+    def output_stream(self, message):
+        # Should actually just print to self._out
+        print(message)
 
     def callback(self, ntuple):
         ntuple = self.decoder.convert_JSON_to_ntuple(ntuple)
         call_type = ntuple['type']
         if call_type == "failure":
-            print(ntuple['message'])
+            self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
+            #print(ntuple['message'])
         elif call_type == "clarification":
-            print(ntuple['message'])
+            self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
             #print(ntuple['ntuple'])
+        elif call_type == "response":
+            self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
         #print(ntuple)
         #decoded = self.decoder.convert_JSON_to_ntuple(ntuple)
         #print(decoded)
