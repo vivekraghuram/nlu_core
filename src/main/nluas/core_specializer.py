@@ -117,26 +117,29 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
     # Returns parameters for Stasis type of process ("the box is red")
     def params_for_stasis(self, process, params):
         prop = process.state
+        a = {}
+        a['negated'] = False
+        if "negated" in prop.__dir__() and prop.negated.type() == "yes":
+            a['negated'] = True
         #params = updated(d, action = process.actionary.type()) #process.protagonist.ontological_category.type())
         if self.analyzer.issubtype('SCHEMA', prop.type(), 'PropertyModifier'):
-            a = {str(prop.property.type()): prop.value.type()}#, 'type': 'property'}
-            a['negated'] = False
-            if "negated" in prop.__dir__() and prop.negated.type() == "yes":
-                a['negated'] = True
-            params.update(predication = a)
+            a[str(prop.property.type())] = prop.value.type()#, 'type': 'property'}
         elif self.analyzer.issubtype('SCHEMA', prop.type(), 'RefIdentity'):
-            a = {'identical': {'objectDescriptor': self.get_objectDescriptor(prop.second)} }
+            a['identical']= {'objectDescriptor': self.get_objectDescriptor(prop.second)}
             params.update(predication = a)
         elif self.analyzer.issubtype('SCHEMA', prop.type(), 'TrajectorLandmark'):
             if prop.landmark.referent.type() == 'antecedent':
                 landmark = get_referent(process, params)
             else:
                 landmark = self.get_objectDescriptor(prop.landmark)
-            pred = {'relation': self.get_locationDescriptor(prop.profiledArea), 'objectDescriptor': landmark}
+            a['relation']= self.get_locationDescriptor(prop.profiledArea) 
+            a['objectDescriptor']= landmark
             #print(prop.profiledArea.ontological_category.type())
-            params.update(predication=pred)
+            params.update(predication=a)
         #if not 'specificWh' in params:  # Check if it's a WH question, in which case we don't want to do "X-check"
         #    params = self.crosscheck_params(params)
+
+        params.update(predication = a)
         return params                
 
 
