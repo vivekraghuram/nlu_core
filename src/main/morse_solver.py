@@ -12,11 +12,12 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
         TwoDimensionalAvoidanceSolver.__init__(self)
         self.world = build('morse')
 
-    def move(self, mover, x, y, z, speed, tolerance=2, collide=False):
+    def move(self, mover, x, y, z=0.0, speed=2, tolerance=3, collide=False):
         if collide:
+            print("here")
             new, interrupted = mover.move_np(x=x, y=y, z=z, speed=speed, tolerance=tolerance)
         else:
-            origin = mover.pos 
+            origin = [mover.pos.x, mover.pos.y]
             destination = [x, y]  #z?
             line = self.compute_line(origin, destination, mover)
             smoothed = self.smooth_trajectory(line)

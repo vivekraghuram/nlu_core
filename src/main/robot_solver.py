@@ -66,7 +66,7 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         destination = information['destination']
         if destination:
             self.move(information['protagonist'], destination['x'], destination['y'], destination['z'], 
-                information['speed'], tolerance=2)
+                information['speed'], tolerance=3)
         else:
             print("Command_move, no destination.")
 
@@ -78,12 +78,12 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         information['protagonist'] = self.get_described_object(parameters.protagonist['objectDescriptor'])
         information['speed'] = parameters.speed * self._speed
         if parameters.goal:
-            information['destination'] =self.goal_info(parameters.goal)
+            information['destination'] =self.goal_info(parameters.goal, information['protagonist'])
         elif parameters.heading:
             information['destination'] = self.heading_info(information['protagonist'], parameters.heading, parameters.distance)
         return information
 
-    def goal_info(self, goal):
+    def goal_info(self, goal, protagonist=None):
         destination = dict(x=None, y=None, z=0.0)
         if "location" in goal:
             if goal['location'] == 'home':
@@ -106,7 +106,7 @@ class BasicRobotProblemSolver(CoreProblemSolver):
                 return None
         elif "locationDescriptor" in goal:
             properties = goal['locationDescriptor']
-            position = self.get_described_position(properties)
+            position = self.get_described_position(properties, protagonist)
             destination['x'], destination['y'], destination['z'] = position[0], position[1], position[2]
         return destination
 
@@ -137,8 +137,8 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
     def push_direction(self, heading, acted_upon, distance, pusher):
         info = self.get_push_direction_info(heading, acted_upon, distance['value'])
-        self.move(pusher, info['x1'], info['y1'], tolerance=1.5)
-        self.move(pusher, info['x2'], info['y2'], tolerance=2, collide=True)
+        self.move(pusher, info['x1'], info['y1'], tolerance=3)
+        self.move(pusher, info['x2'], info['y2'], tolerance=3, collide=True)
 
 
     def get_push_direction_info(self, heading, obj, distance):
@@ -208,7 +208,7 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
     def behind(self, position, reference):
         xdiff = position.x - reference.y
-        ydiff = position.y - ref.y
+        ydiff = position.y - reference.y
         if abs(xdiff) > abs(ydiff):
             if xdiff>0:
                 new = [position.x +3, position.y]
@@ -242,6 +242,7 @@ class BasicRobotProblemSolver(CoreProblemSolver):
             if description['relation'] == 'near':
                 locations = self.get_near(candidates, obj)
             elif description['relation'] == 'behind':
+                # TODO: get_behind
                 pass
             return locations
         else:
@@ -266,7 +267,6 @@ class BasicRobotProblemSolver(CoreProblemSolver):
                 return [getattr(self.world, description['referent'])]
             else:
                 return []
-
         obj_type = description['type']
         objs = []
         for item in self.world.__dict__.keys():
@@ -279,17 +279,13 @@ class BasicRobotProblemSolver(CoreProblemSolver):
                 if obj.color == color:
                     copy.append(obj)
             objs = copy
-
         kind = description['kind'] if 'kind' in description else 'unmarked'
         if 'size' in description:
             size = description['size']
             objs = self.evaluate_feature(size, kind, objs)
-
         if 'locationDescriptor' in description:
-            #pass
             objs = self.get_described_location(objs, description['locationDescriptor'], multiple=multiple)
-            # Get locations...
-
+        # TODO: Partdescriptor
         return objs
 
 
@@ -405,8 +401,6 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         predication = parameters.predication
         dispatch = getattr(self, "eval_{}".format(parameters.specificWh))
         dispatch(protagonist, predication, num)
-        #else:
-        #print("Eval_Wh error, no protagonist found.")
 
     def eval_which(self, protagonist, predication, num):
         copy = []
@@ -489,16 +483,14 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         condition = ntuple.parameters[0].condition[0]
         if self.evaluate_condition(condition):
             for params in ntuple.parameters[0].command:
-                print(params)
-                self.route_action(params)
-        #self.decoder.pprint_ntuple(ntuple)
+                self.route_action(params, "command")
 
     # Conditional declaratives not yet implemented for robots
     def solve_conditional_declarative(self, ntuple):
         self.decoder.pprint_ntuple(ntuple)
 
 
-    def move(self, mover, x, y, z=0.0, speed=2, tolerance=2, collide=False):
+    def move(self, mover, x, y, z=0.0, speed=2, tolerance=3, collide=False):
         print("{} is moving to ({}, {}, {}).".format(mover.name, x, y, z))
 
 if __name__ == "__main__":
@@ -519,4 +511,5 @@ if __name__ == "__main__":
     query1 = Struct(parameters=[Struct(protagonist={'objectDescriptor': {'gender': 'genderValues', 'number': 'singular', 'type': 'box', 'givenness': 'givennessValues'}}, kind='query', specificWh='which', p_features={'tense': 'present'}, predication={'negated': True, 'color': 'big'}, action='be')], predicate_type='query', return_type='singleton::instance_reference')
     query2 = Struct(parameters=[Struct(protagonist={'objectDescriptor': {'gender': 'genderValues', 'number': 'plural', 'type': 'box', 'givenness': 'givennessValues'}}, kind='query', specificWh='which', p_features={'tense': 'present'}, predication={'negated': False, 'color': 'red'}, action='be')], predicate_type='query', return_type='collection_of::instance_reference')
     solver.ntuple = query1
-
+    conditional = Struct(parameters=[Struct(command=[Struct(action='move', collaborative=False, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, heading=None, goal={'objectDescriptor': {'type': 'box', 'referent': 'box2_instance'}}, distance={'units': 'square', 'value': 4}, control_state='ongoing', speed=0.5, kind='execute', direction=None, p_features={'voice': 'notPassive'})], condition=[Struct(action='be', kind='query', protagonist={'objectDescriptor': {'type': 'box', 'referent': 'box1_instance'}}, p_features={'tense': 'present'}, predication={'negated': False, 'color': 'red'})], kind='conditional_imperative')], predicate_type='conditional_imperative', return_type='error_descriptor')
+    behind = Struct(predicate_type='command', parameters=[Struct(collaborative=False, goal={'locationDescriptor': {'objectDescriptor': {'type': 'box', 'number': 'singular', 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'negated': False, 'gender': 'genderValues', 'color': 'blue'}, 'relation': 'behind'}}, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, direction=None, heading=None, speed=0.5, p_features={'voice': 'notPassive'}, distance={'units': 'square', 'value': 4}, action='move', control_state='ongoing', kind='execute')], return_type='error_descriptor')
