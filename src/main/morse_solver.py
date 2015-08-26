@@ -14,7 +14,6 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
 
     def move(self, mover, x, y, z=0.0, speed=2, tolerance=3, collide=False):
         if collide:
-            print("here")
             new, interrupted = mover.move_np(x=x, y=y, z=z, speed=speed, tolerance=tolerance)
         else:
             origin = [mover.pos.x, mover.pos.y]
@@ -26,6 +25,7 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
                 if interrupted:
                     self.update_world(discovered=[new])
                     self.move(mover, x, y, z, speed, tolerance, collide=False)
+        self.update_world()
 
     def update_world(self, discovered=[]):
         # Fill in later

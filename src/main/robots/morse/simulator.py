@@ -98,10 +98,6 @@ class Robot(object):
         motion = getattr(inst, q)
         #print(motion.get_status().result())
         motion.publish(to)
-        #p = inst.proximity
-        #inst.motion.goto(to['x'],to['y'] ,to['tolerance'],to['speed'])
-        #print(inst.motion.get_configurations())
-        # Leave a couple of ms to the simulator to start the action.
         self.simulator.sleep(0.3)
     
         # waits until we reach the target

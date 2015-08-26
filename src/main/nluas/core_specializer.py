@@ -149,13 +149,8 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         s = self.get_actionDescriptor(process)
         if 'collaborative' in s:
             params.update(collaborative=s['collaborative'])
-        #if hasattr(process, 'speed') and str(process.speed) != "None":# and process.speed.type():
-        #    params.update(speed = float(process.speed))
-        #else:  # Might change this - "dash quickly" (what should be done here?)
-        #    s = self.get_actionDescriptor(process)
         if 'speed' in s and s['speed'] is not None:
             params.update(speed = float(s['speed']))
-        # Is there a heading specified?
         if hasattr(process, 'heading'):
             if process.heading.type():
                 params.update(heading=process.heading.tag.type())
@@ -173,27 +168,8 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
     # gets params for force-application, like "push the box"
     def params_for_forceapplication(self, process, params):
         """ Gets params for Force Application process. """
-        if hasattr(process.actedUpon, 'referent'):
-            if process.actedUpon.ontological_category.type() == 'antecedent':
-                try:
-                    affected = self.resolve_anaphoricOne(process.actedUpon)
-                except ReferentResolutionException as e:
-                    print(e.message)
-            elif process.actedUpon.referent.type() == "antecedent":
-                try:
-                    affected = self.resolve_referents(actionary = params['action'])
-                except ReferentResolutionException as e:
-                    print(e.message)
-                    return None
-            else:
-                if process.actedUpon.referent.type():
-                    affected = {'objectDescriptor': {'referent': process.actedUpon.referent.type(), 'type': process.actedUpon.ontological_category.type()}}
-                else:
-                    affected = {'objectDescriptor': self.get_objectDescriptor(process.actedUpon)}
-            self._stacked.append(affected)
-        else:
-            affected = None
-        params.update(acted_upon = affected)
+        affected = self.get_protagonist(process.actedUpon, process)
+        params.update(acted_upon=affected)
         return params   
 
     def params_for_stagedprocess(self,process, d):
@@ -206,26 +182,17 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
     def causalProcess(self, process, param_name="_execute"):
         params = updated(self._cause, action = process.actionary.type())
-        if hasattr(process.protagonist, 'referent') and process.protagonist.referent.type():
-            #params.update(causer = {'objectDescriptor': self.get_objectDescriptor(process.causalAgent)})
-            params.update(causer = self.get_protagonist(process.protagonist, process))
-        else:
-            #params.update(causer = {'objectDescriptor': self.get_objectDescriptor(process.causalAgent)})
-            params.update(causer = self.get_protagonist(process.protagonist, process))
+        params.update(causer = self.get_protagonist(process.protagonist, process))
         collab = self.get_actionDescriptor(process)
         if 'collaborative' in collab:
             params.update(collaborative=collab['collaborative'])
         if "joint" in params['causer']['objectDescriptor']:
             params.update(collaborative=True)
-
         if hasattr(process, "p_features"):
             params = updated(params, p_features=self.get_process_features(process.p_features))
-        #cp = params_for_compound(process.process1)
         param_type = getattr(self, param_name)
         cp = self.params_for_simple(process.process1, param_type)
         ap = self.params_for_simple(process.process2, param_type)
-        if cp is None or ap is None:
-            return None
         params.update(causalProcess = Struct(cp))
         params.update(affectedProcess = Struct(ap))
         return params
@@ -273,8 +240,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         if hasattr(process, "p_features"):
             params = updated(params, p_features=self.get_process_features(process.p_features))
         if not process.type() in self.simple_processes:
-            sub = self.process_is_subtype(process)
-            if sub:
+            if self.process_is_subtype(process):
                 return self.simple_processes[sub](process, params)
             return self.params_for_undefined_process(process, params)
 
@@ -288,6 +254,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
     def get_process_features(self, p_features):
         features = dict()
+        """
         if hasattr(p_features, "tense") and p_features.tense:
             features["tense"] = p_features.tense.type()
         if hasattr(p_features, "voice") and p_features.voice:
@@ -295,7 +262,11 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         if hasattr(p_features, "negated") and p_features.negated:
             features["negated"] = p_features.negated.type()
         if hasattr(p_features, "lexicalAspect") and p_features.lexicalAspect:
-            features["lexicalAspect"] = p_features.lexicalAspect.type()          
+            features["lexicalAspect"] = p_features.lexicalAspect.type() 
+        """
+        for role, filler in p_features.__items__():
+            if filler:
+                features[str(role)] = filler.type()
         return features
 
 
