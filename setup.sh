@@ -1,12 +1,8 @@
 
-#sh starter.sh
-#screen -dmS "analyzer" sh starter.sh
-#screen -dmS "test2" python3 src/main/prog2.py AgentUI
-#screen -dmS "test3" python3 src/main/prog.py ProblemSolver -logfile=test
-#sh ui_setup.sh &
-#sh starter.sh && python3 src/main/prog2.py AgentUI &
+# A user should set PYTHONPATH in their .bash_profile
+#export PYTHONPATH=/Users/seantrott/icsi/nlu-core/src/main
 export ECG_FED=FED2
-python3 src/main/robot_solver.py ProblemSolver &
+python3 src/main/robots/robot_solver.py ProblemSolver &
 export PID=$!
 echo "PS" $PID
 sh ui_setup.sh

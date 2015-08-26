@@ -6,7 +6,7 @@
 
 """
 
-from robots.utils import Struct
+from nluas.utils import Struct
 
 def build(subsystem):
     """Trivial. Return a Struct whose attributes describe all the

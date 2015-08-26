@@ -68,7 +68,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                     return None
                 # Resolve_referents()
             else:
-                goal['objectDescriptor'] = {'referent': g.referent.type(), 'type': g.ontological_category.type()}    ## Possibly add "object descriptor" as key here        
+                goal['objectDescriptor'] = self.get_objectDescriptor(g) #{'referent': g.referent.type(), 'type': g.ontological_category.type()}    ## Possibly add "object descriptor" as key here        
         elif g.ontological_category.type() == 'location':
             # if complex location, get "location descriptor"
             goal['location'] = (int(g.xCoord), int(g.yCoord))

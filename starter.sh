@@ -1,3 +1,3 @@
 export JYTHONPATH=build/compling.core.jar:src/main/nluas
-jython -m analyzer ../ecg-grammars/compRobots.prefs
+jython -m analyzer ../ecg-grammars/starter.prefs
 
