@@ -53,7 +53,7 @@ def build():
 
     proximity_robot1_instance = Proximity()
     atrv.append(proximity_robot1_instance)
-    proximity_robot1_instance.properties(Range = 3.0, Track = "Catch_me")
+    proximity_robot1_instance.properties(Range = 4.0, Track = "Catch_me")
     proximity_robot1_instance.add_stream('socket')
     proximity_robot1_instance.add_service('socket')
     #proximity.set_tracked_tag("Catch_me")
@@ -93,7 +93,7 @@ def build():
 
     proximity_robot2_instance = Proximity()
     atrv2.append(proximity_robot2_instance)
-    proximity_robot2_instance.properties(Range = 3.0, Track = "Catch_me")
+    proximity_robot2_instance.properties(Range = 4.0, Track = "Catch_me")
     proximity_robot2_instance.add_stream('socket')
     proximity_robot2_instance.add_service('socket')
 
@@ -143,13 +143,13 @@ def build():
     box4_instance.properties(Object=True, Label = "box4_instance", Type="box", Catch_me=True, Description=json.dumps({'color': 'red', 'size': 1}))
 
     
-    """
+    
     box5_instance = PassiveObject(indoor_path, 'PinkBox')
     box5_instance.setgraspable()
     box5_instance.translate(x=6, y=0.0, z=0)
     #box4.rotate(z=0.2)
     box5_instance.properties(Object=True, Label = "box5_instance", Type="box", Catch_me=True, Description=json.dumps({'color': 'pink', 'size': .5}))
-    """
+    
 
     # Environment
     env = Environment('indoors-1/empty-room')

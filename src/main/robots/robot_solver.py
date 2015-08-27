@@ -404,10 +404,10 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
     def eval_where(self, protagonist, predication=None, num="singleton"):
         obj = self.get_described_object(protagonist['objectDescriptor'])
-        if len(obj) >= 1:
-            message = "The position of the {} is: x:{}, y:{}".format(self.assemble_string(protagonist['objectDescriptor']), obj.pos.x, obj.pos.y)
-            message = "The position of the {} is: ({}, {})".format(self.assemble_string(protagonist['objectDescriptor']), obj.pos.x, obj.pos.y)
-            self.respond_to_query(message)
+        if obj and len(obj) >= 1:
+                message = "The position of the {} is: x:{}, y:{}".format(self.assemble_string(protagonist['objectDescriptor']), obj.pos.x, obj.pos.y)
+                message = "The position of the {} is: ({}, {})".format(self.assemble_string(protagonist['objectDescriptor']), obj.pos.x, obj.pos.y)
+                self.respond_to_query(message)
 
     def eval_which(self, protagonist, predication, num):
         copy = []

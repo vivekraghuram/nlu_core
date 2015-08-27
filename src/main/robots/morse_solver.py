@@ -23,14 +23,29 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
             for point in smoothed:
                 new, interrupted = mover.move(x=point[0], y=point[1], z=0, speed=speed, tolerance=tolerance)
                 if interrupted:
-                    self.update_world(discovered=[new])
+                    self.update_world(agent=mover, discovered=new)
                     self.move(mover, x, y, z, speed, tolerance, collide=False)
-        self.update_world()
+        self.update_world(agent=mover)
 
-    def update_world(self, discovered=[]):
-        # Fill in later
-        # Could either use semantic camera of a robot, or the RPC method
-        pass
+
+    def update_world(self, agent, discovered=[]):
+        newworld = agent.get_world_info()
+        # This will need to be changed dependent on worldview; 
+        for obj in newworld:
+            if hasattr(self.world, obj['name']):    
+                setattr(getattr(self.world, obj['name']), 'pos',Struct(x =obj['position'][0], y=obj['position'][1], z =obj['position'][2]) )
+            else:
+                #if obj['type'] in discovered:
+                print(obj['name'])
+                print(discovered)
+                if obj['name'] in discovered:
+                    print(obj)
+                    description = json.loads(obj['description'])
+                    self.world.__dict__[obj['name']] = Struct(pos=Struct(x =obj['position'][0], y=obj['position'][1], z = obj['position'][2]), 
+                                                              name=obj['name'],
+                                                              type=obj['type'],
+                                                              color=description['color'],
+                                                              size=description['size'])
 
     def getpos(self, inst):
         instance =getattr(self.world, inst)
