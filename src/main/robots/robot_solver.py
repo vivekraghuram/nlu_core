@@ -18,7 +18,7 @@ from action/query functions. Thus, we'd have several functions involving "move",
 
 """
 
-from nluas.core_solver import *
+from nluas.app.core_solver import *
 from nluas.utils import *
 from builder import *
 import sys

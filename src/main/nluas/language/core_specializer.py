@@ -5,7 +5,7 @@ The Core Specializer performs some basic operations in converting a SemSpec to a
 
 """
 
-from nluas.specializer_utils import *
+from nluas.language.specializer_utils import *
 from nluas.utils import *
 import pickle
 

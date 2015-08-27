@@ -2,7 +2,7 @@
 Similar to a regular UserAgent, but it uses a RobotSpecializer instead.
 """
 
-from nluas.user_agent import *
+from nluas.language.user_agent import *
 from robot_specializer import *
 import sys
 

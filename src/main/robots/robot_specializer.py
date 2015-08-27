@@ -1,4 +1,4 @@
-from nluas.core_specializer import *
+from nluas.language.core_specializer import *
 
 class RobotSpecializer(CoreSpecializer, RobotTemplateSpecializer):
 	def __init__(self, analyzer_port):

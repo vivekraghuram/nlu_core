@@ -29,7 +29,7 @@ except:
     from xmlrpc.client import ServerProxy, Fault #@UnusedImport @UnresolvedImport @Reimport
 
 from os.path import basename
-from nluas.analyzer_proxy import Analyzer
+from nluas.language.analyzer_proxy import Analyzer
 # from pprint import pprint, pformat
 
 

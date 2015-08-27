@@ -4,7 +4,7 @@ A Morse Problem Solver (extends BasicRobotProblemSolver).
 """
 
 from robot_solver import *
-from robots.avoidance import TwoDimensionalAvoidanceSolver
+from robot_utils.avoidance import TwoDimensionalAvoidanceSolver
 
 class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSolver):
     def __init__(self, args):

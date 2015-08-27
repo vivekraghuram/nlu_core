@@ -2,7 +2,7 @@
 """
 
 from pymorse import Morse  
-from robots.morse.utils import update, Struct
+from nluas.utils import update, Struct
 from pprint import pprint
 
 

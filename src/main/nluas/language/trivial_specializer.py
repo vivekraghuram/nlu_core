@@ -1,4 +1,4 @@
-from nluas.specializer_utils import *
+from nluas.language.specializer_utils import *
 from nluas.utils import *
 import pickle
 

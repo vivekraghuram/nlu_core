@@ -1,9 +1,8 @@
-from nluas.core_specializer import *
+from nluas.language.core_specializer import *
 from nluas.core_agent import *
-from nluas.analyzer_proxy import *
-from nluas.core_specializer import *
+from nluas.language.analyzer_proxy import *
 from nluas.ntuple_decoder import NtupleDecoder
-from nluas.spell_checker import *
+from nluas.language.spell_checker import *
 import sys, traceback, time
 
 

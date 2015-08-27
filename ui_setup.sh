@@ -1,6 +1,6 @@
 #sh starter.sh &
 export ECG_FED=FED2
-export JYTHONPATH=build/compling.core.jar:src/main/nluas
+export JYTHONPATH=build/compling.core.jar:src/main/nluas/language
 jython -m analyzer ../ecg-grammars/compRobots.prefs &
 export PID=$!
 echo "Analyzer" $PID

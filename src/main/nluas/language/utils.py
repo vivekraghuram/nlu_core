@@ -37,6 +37,9 @@ except:
 # 
 #     True, False = bool(1), bool(0)
 
+
+
+
 try: sum  # # Introduced in 2.3
 except NameError:
     def sum(seq, start=0):
