@@ -4,7 +4,7 @@ from nluas.language.analyzer_proxy import *
 from nluas.ntuple_decoder import NtupleDecoder
 from nluas.language.spell_checker import *
 import sys, traceback, time
-
+import json
 
 class WaitingException(Exception):
     def __init__(self, message):
@@ -65,7 +65,7 @@ class UserAgent(CoreAgent):
                     break
                 except Exception as e:
                     self.output_stream(e)
-                    traceback.print_exc()
+                    #traceback.print_exc()
         except Exception as e:
             print(e)
 
@@ -80,7 +80,10 @@ class UserAgent(CoreAgent):
             self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
             #print(ntuple['message'])
         elif call_type == "clarification":
-            self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
+            #self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
+            output = "{}: {}".format(ntuple['tag'], ntuple['message'])
+            #self.prompt(clarification=True, ntuple=ntuple['ntuple'])
+            self.process_clarification(output, ntuple['ntuple'])
             #print(ntuple['ntuple'])
         elif call_type == "response":
             self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
@@ -110,13 +113,16 @@ class UserAgent(CoreAgent):
             elif specialize:
                 if self.check_spelling(msg):
                     self.process_input(msg)
-            elif msg == None or msg == "":
-                specialize = False
-            elif msg.lower()[0] == 'd':
-                self.specializer.set_debugging()
-                specialize = False
-            elif specialize:
-                self.process_spelling(msg)
+
+
+
+    def process_clarification(self, msg, ntuple):
+        self.output_stream(msg)
+        #msg = input(msg + "> ")
+        new = self.decoder.convert_JSON_to_ntuple(ntuple)
+        #print(new)
+        #print(msg)
+        #print(ntuple)
 
     
     def check_spelling(self, msg):

@@ -22,98 +22,110 @@ but the schematic implementation can be implemented here.
 from nluas.ntuple_decoder import *
 from nluas.core_agent import *
 import random
-import sys
+import sys, traceback
 import json
 
+def check_complexity(n):
+    s = int(n)
+    if s not in [1, 2, 3]:
+        raise argparse.ArgumentTypeError("{} is an invalid entry for the complexity level. Should be 1, 2, or 3.".format(n))
+    return s
 
 class CoreProblemSolver(CoreAgent):
 
-	def __init__(self, args):
-		self.ntuple = None
-		self.decoder = NtupleDecoder()
-		CoreAgent.__init__(self, args)
-		self.world = []
-		self.solver_parser = self.setup_solver_parser()
-		args = self.solver_parser.parse_args(self.unknown)
-		self.complexity = args.complexity
-		self.ui_address = "{}_{}".format(self.federation, "AgentUI")
-		self.transport.subscribe(self.ui_address, self.callback)
-		self._incapable = "I cannot do that yet."
+    def __init__(self, args):
+        self.ntuple = None
+        self.decoder = NtupleDecoder()
+        CoreAgent.__init__(self, args)
+        self.world = []
+        self.solver_parser = self.setup_solver_parser()
+        args = self.solver_parser.parse_args(self.unknown)
+        self.complexity = args.complexity
+        self.ui_address = "{}_{}".format(self.federation, "AgentUI")
+        self.transport.subscribe(self.ui_address, self.callback)
+        self._incapable = "I cannot do that yet."
 
-	def setup_solver_parser(self):
-		parser = argparse.ArgumentParser()
-		parser.add_argument("-c", "--complexity", type=str, help="indicate level of complexity")
-		return parser
+    def setup_solver_parser(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-c", "--complexity", default=1, type=check_complexity, help="indicate level of complexity: 1, 2, or 3.")
+        return parser
 
-	def callback(self, ntuple):
-		self.solve(ntuple)
+    
+    def read_templates(self, filename):
+        with open(filename, "r") as data_file:
+            data = json.loads(data_file.read())
+            for name, template in data['templates'].items():
+                self.__dict__[name] = template
 
-	def request_clarification(self, ntuple, message="This ntuple requires clarification."):
-		new = self.decoder.convert_to_JSON(ntuple)
-		request = {'ntuple': new, 'message': message, 'type': 'clarification', 'tag': self.address}
-		self.transport.send(self.ui_address, json.dumps(request))
+    def callback(self, ntuple):
+        self.solve(ntuple)
 
-	def identification_failure(self, message):
-		request = {'type': 'failure', 'message': message, 'tag': self.address}
-		self.transport.send(self.ui_address, json.dumps(request))
+    def request_clarification(self, ntuple, message="This ntuple requires clarification."):
+        new = self.decoder.convert_to_JSON(ntuple)
+        request = {'ntuple': new, 'message': message, 'type': 'clarification', 'tag': self.address}
+        self.transport.send(self.ui_address, json.dumps(request))
 
-	def respond_to_query(self, message):
-		request = {'type': 'response', 'message': message, 'tag': self.address}
-		self.transport.send(self.ui_address, json.dumps(request))
+    def identification_failure(self, message):
+        request = {'type': 'failure', 'message': message, 'tag': self.address}
+        self.transport.send(self.ui_address, json.dumps(request))
 
-	def solve(self, json_ntuple):
-		ntuple = self.decoder.convert_JSON_to_ntuple(json_ntuple)
-		if self.check_for_clarification(ntuple):
-			self.request_clarification(ntuple=ntuple)
-		else:
-			self.ntuple = ntuple
-			predicate_type = ntuple.predicate_type
-			try:
-				dispatch = getattr(self, "solve_%s" %predicate_type)
-				dispatch(ntuple)
-			except AttributeError as e:
-				print(e)
-				message = "I cannot solve a(n) {}.".format(predicate_type)
-				self.identification_failure(message)
-				
-	def update_world(self, discovered=[]):
-		for item in discovered:
-			self.world.append(item)
+    def respond_to_query(self, message):
+        request = {'type': 'response', 'message': message, 'tag': self.address}
+        self.transport.send(self.ui_address, json.dumps(request))
 
-	def solve_command(self, ntuple):
-		self.decoder.pprint_ntuple(ntuple)
+    def solve(self, json_ntuple):
+        ntuple = self.decoder.convert_JSON_to_ntuple(json_ntuple)
+        if self.check_for_clarification(ntuple):
+            self.request_clarification(ntuple=ntuple)
+        else:
+            self.ntuple = ntuple
+            predicate_type = ntuple['predicate_type']
+            try:
+                dispatch = getattr(self, "solve_%s" %predicate_type)
+                dispatch(ntuple)
+            except AttributeError as e:
+                print(e)
+                message = "I cannot solve a(n) {}.".format(predicate_type)
+                self.identification_failure(message)
+                
+    def update_world(self, discovered=[]):
+        for item in discovered:
+            self.world.append(item)
 
-	def solve_query(self, ntuple):
-		self.decoder.pprint_ntuple(ntuple)
+    def solve_command(self, ntuple):
+        self.decoder.pprint_ntuple(ntuple)
 
-	def solve_assertion(self, ntuple):
-		self.decoder.pprint_ntuple(ntuple)
+    def solve_query(self, ntuple):
+        self.decoder.pprint_ntuple(ntuple)
 
-	def solve_conditional_imperative(self, ntuple):
-		self.decoder.pprint_ntuple(ntuple)
+    def solve_assertion(self, ntuple):
+        self.decoder.pprint_ntuple(ntuple)
 
-	def solve_conditional_declarative(self, ntuple):
-		self.decoder.pprint_ntuple(ntuple)
+    def solve_conditional_imperative(self, ntuple):
+        self.decoder.pprint_ntuple(ntuple)
 
-	def route_action(self, parameters, predicate):
-		action = parameters.action
-		try:
-			dispatch = getattr(self, "{}_{}".format(predicate, action))
-			dispatch(parameters)
-		except AttributeError as e:
-			print(e)
-			message = "I cannot solve the '{}' action".format(action)
-			self.identification_failure(message)
+    def solve_conditional_declarative(self, ntuple):
+        self.decoder.pprint_ntuple(ntuple)
 
-	def close(self):
-		return
+    def route_action(self, parameters, predicate):
+        action = parameters['action']
+        try:
+            dispatch = getattr(self, "{}_{}".format(predicate, action))
+            dispatch(parameters)
+        except AttributeError as e:
+            traceback.print_exc()
+            message = "I cannot solve the '{}' action".format(action)
+            self.identification_failure(message)
+
+    def close(self):
+        return
 
 
-	def check_for_clarification(self, ntuple):
-		""" Will need to be replaced by a process that checks whether ntuple needs clarification.
-		Requires some sort of context/world model. """
-		#return random.choice([True, False])
-		return False
+    def check_for_clarification(self, ntuple):
+        """ Will need to be replaced by a process that checks whether ntuple needs clarification.
+        Requires some sort of context/world model. """
+        #return random.choice([True, False])
+        return False
 
 if __name__ == '__main__':
-	ps = CoreProblemSolver(sys.argv[1:])
+    ps = CoreProblemSolver(sys.argv[1:])

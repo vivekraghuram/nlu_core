@@ -142,10 +142,12 @@ class UtilitySpecializer(DebuggingSpecializer):
     Now just iterates through feature struct values (due to change in FS structure). Returns a dictionary
     of object type, properties, and trajector landmarks.
     """
-    def get_objectDescriptor(self, goal):
+    def get_objectDescriptor(self, goal, resolving=False):
         if 'referent' in goal.__dir__() and goal.referent.type():
             if goal.referent.type() == "antecedent":
                 return self.resolve_referents()['objectDescriptor']
+            elif goal.referent.type() == "anaphora" and not resolving:
+                return self.resolve_anaphoricOne(goal)['objectDescriptor']
             else:
                 returned = {'referent': goal.referent.type(), 'type': goal.ontological_category.type()}
         elif goal.ontological_category.type() == 'location':
@@ -191,20 +193,11 @@ class UtilitySpecializer(DebuggingSpecializer):
             ref = popper.pop()
             while ('location' in ref or 'locationDescriptor' in ref or 'referent' in ref['objectDescriptor']) and len(popper) > 0:
                 ref = popper.pop()
-            # Select a new referent if it's a reference to a location, or a real referent (box1) as opposed to descriptor
-            #if 'location' in ref or 'locationDescriptor' in ref or 'referent' in ref['objectDescriptor']:
-            #    ref = popper.pop()
-                #return self.resolves_one(ref['locationDescriptor']['objectDescriptor'])
-            #else:
-            # Inspect object descriptor: if it contains color and size, maybe add these too?
             if item.givenness.type() == 'distinct':
                 return {'objectDescriptor': {'type': ref['objectDescriptor']['type'], 'givenness': 'distinct'}} 
             else:
-                test = self.get_objectDescriptor(item)
-
-                ### Here, it should evaluate the list of descriptors (color, size, etc.) and see which ones conflict with previous OD. have new function, "eval_properties".
+                test = self.get_objectDescriptor(item, resolving=True)
                 merged = self.merge_descriptors(ref['objectDescriptor'], test)
-                #test['type'] = ref['objectDescriptor']['type']
                 return {'objectDescriptor': merged}
         raise ReferentResolutionException("Sorry, I don't know what you mean by 'one'.")
 
@@ -212,13 +205,13 @@ class UtilitySpecializer(DebuggingSpecializer):
     def merge_descriptors(self, old, new):
         """ Merges object descriptors from OLD and NEW. Objective: move descriptions / properties from OLD
         into NEW unless NEW conflicts. If a property conflicts, then use the property in NEW. """
+        if 'referent' in new and new['referent'] in ['anaphora', 'antecedent']:
+            new.pop("referent")
         for key, value in old.items():
             if key == 'type':
                 new[key] = old[key]
             if not key in new:
                 new[key] = old[key]
-            #if not key in new: 
-                #do something 
         return new
         
     """ Simple reference resolution gadget, meant to unify object pronouns with potential
@@ -282,7 +275,7 @@ class UtilitySpecializer(DebuggingSpecializer):
 class TemplateSpecializer(NullSpecializer):
     def __init__(self):
 
-        self._NTUPLE_T = dict(predicate_type=None,             
+        self._wrapper = dict(predicate_type=None,             
                               parameters=None, # one of (_execute, _query)                         
                               return_type='error_descriptor') 
 
@@ -330,7 +323,7 @@ class TemplateSpecializer(NullSpecializer):
 
         # Conditional Imperative
         self._conditional_imperative = dict(kind='conditional_imperative',
-                                 condition=None,  # Maybe should be template for Y/N question?
+                                 condition=self._YN,  # Maybe should be template for Y/N question?
                                  command = self._execute)
 
         # Conditional Imperative
@@ -352,19 +345,19 @@ class RobotTemplateSpecializer(TemplateSpecializer):
 
         TemplateSpecializer.__init__(self)
 
-        
+        """
         # Basic executable dictionary
         self._execute = dict(kind='execute',
                              control_state='ongoing', 
                              action=None,
                              protagonist=None,
-                             distance=Struct(value=4, units='square'),
+                             distance={"value": .5, "units":'square'},
                              goal=None,
                              speed = .5,
                              heading=None, #'north',
                              direction=None,
                              collaborative=False)
-
+        """
 
 
 

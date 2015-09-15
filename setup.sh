@@ -2,7 +2,7 @@
 #export PYTHONPATH=/Users/seantrott/icsi/nlu-core/src/main
 export ECG_FED=FED2
 #python3 src/main/robots/robot_solver.py ProblemSolver &
-python3 src/main/robots/morse_solver.py ProblemSolver &
+python3 src/main/robots/robot_solver.py ProblemSolver &
 export PID=$!
 echo "PS" $PID
 sh ui_setup.sh

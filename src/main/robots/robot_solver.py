@@ -45,19 +45,21 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
 
     def set_home(self, ntuple):
-        if ntuple.parameters[0].kind == "cause":
-            prot = ntuple.parameters[0].causer
+        parameters = ntuple['parameters']
+        if parameters[0]['kind'] == "cause":
+            prot = parameters[0]['causer']
         else:
-            prot = ntuple.parameters[0].protagonist
+            prot = parameters[0]['protagonist']
         self._home = self.get_described_object(prot['objectDescriptor']).pos
 
     def solve_command(self, ntuple):
         self.set_home(ntuple)
-        for param in ntuple.parameters:
+        parameters = ntuple['parameters']
+        for param in parameters:
             self.route_action(param, "command")
 
     def solve_query(self, ntuple):
-        for param in ntuple.parameters:
+        for param in ntuple['parameters']:
             self.route_action(param, "query")
 
 
@@ -75,12 +77,12 @@ class BasicRobotProblemSolver(CoreProblemSolver):
                            protagonist=None,
                            speed=None)
 
-        information['protagonist'] = self.get_described_object(parameters.protagonist['objectDescriptor'])
-        information['speed'] = parameters.speed * self._speed
-        if parameters.goal:
-            information['destination'] =self.goal_info(parameters.goal, information['protagonist'])
+        information['protagonist'] = self.get_described_object(parameters['protagonist']['objectDescriptor'])
+        information['speed'] = parameters['speed'] * self._speed
+        if parameters['goal']:
+            information['destination'] =self.goal_info(parameters['goal'], information['protagonist'])
         elif parameters.heading:
-            information['destination'] = self.heading_info(information['protagonist'], parameters.heading, parameters.distance)
+            information['destination'] = self.heading_info(information['protagonist'], parameters['heading'], parameters['distance'])
         return information
 
     def goal_info(self, goal, protagonist=None):
@@ -130,9 +132,16 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         info = self.get_push_info(parameters)
         if info['goal']:
             # Create self.push_to_location
-            self.identification_failure(message=self._incapable)
+            self.push_to_location(info['acted_upon'], info['goal'], info['pusher'])
+            
         elif info['heading']:
             self.push_direction(info['heading'], info['acted_upon'], info['distance'], info['pusher'])
+
+    def push_to_location(self, acted_upon, goal, pusher):
+        self.identification_failure(message=self._incapable)
+        og = acted_upon.pos.__dict__
+        #print("Original location: {}".format(og))
+        #print("Goal location: {}".format(goal))
 
 
     def push_direction(self, heading, acted_upon, distance, pusher):
@@ -152,20 +161,20 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
 
     def get_push_info(self, parameters):
-        heading = parameters.affectedProcess['heading']
-        pusher = self.get_described_object(parameters.causer['objectDescriptor'])
-        goal = parameters.affectedProcess['goal']
-        distance = parameters.affectedProcess['distance']
+        heading = parameters['affectedProcess']['heading']
+        pusher = self.get_described_object(parameters['causer']['objectDescriptor'])
+        goal = parameters['affectedProcess']['goal']
+        distance = parameters['affectedProcess']['distance']
         info = dict(goal=None,
                     heading=None,
                     acted_upon=None,
                     distance=None,
                     pusher=None)
-        obj = self.get_described_object(parameters.causalProcess['acted_upon']['objectDescriptor'])
+        obj = self.get_described_object(parameters['causalProcess']['acted_upon']['objectDescriptor'])
         info['acted_upon'] = obj
         if goal:
-            info['goal'] = self.goal_info(parameters.affectedProcess['goal'])
-        info['heading'] = parameters.affectedProcess['heading'] #self.heading_info(obj, parameters.affectedProcess['heading'], distance)
+            info['goal'] = self.goal_info(parameters['affectedProcess']['goal'])
+        info['heading'] = parameters['affectedProcess']['heading'] #self.heading_info(obj, parameters.affectedProcess['heading'], distance)
         info['distance'] = distance
         info['pusher'] = pusher
         return info
@@ -256,9 +265,10 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         if multiple:
             return locations
         if len(locations) != 1:
+            # TODO: what if there is more than one, what if there are none?
             return []
         else:
-            return locations[0]
+            return locations
 
     def get_described_objects(self, description, multiple=False):
 
@@ -305,7 +315,8 @@ class BasicRobotProblemSolver(CoreProblemSolver):
                 message = "More than one object matches the description of {}.".format(self.assemble_string(description))
                 self.identification_failure(message)
                 return None
-            message = "which {}?".format(self.assemble_string(description))
+            message = "Which '{}'?".format(self.assemble_string(description))
+            # TODO: Tag n-tuple
             self.request_clarification(self.ntuple, message)
             return None
         else:
@@ -387,19 +398,20 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         return str(attributes) + " " + str(ont)
 
     def query_be(self, parameters):
-        if hasattr(parameters, "specificWh"):
-            return self.eval_wh(parameters, self.ntuple.return_type)
-        msg = "Yes." if self.evaluate_condition(parameters) else "No."
-        self.respond_to_query(msg)
+        if "specificWh" in parameters:
+            return self.eval_wh(parameters, self.ntuple['return_type'])
+        else:
+            msg = "Yes." if self.evaluate_condition(parameters) else "No."
+            self.respond_to_query(msg)
 
     def query_be2(self, parameters):
         self.query_be(parameters)
 
     def eval_wh(self, parameters, return_type):
         num, referentType = return_type.split("::")
-        protagonist = parameters.protagonist
-        predication = parameters.predication
-        dispatch = getattr(self, "eval_{}".format(parameters.specificWh))
+        protagonist = parameters['protagonist']
+        predication = parameters['predication']
+        dispatch = getattr(self, "eval_{}".format(parameters['specificWh']))
         dispatch(protagonist, predication, num)
 
     def eval_where(self, protagonist, predication=None, num="singleton"):
@@ -434,12 +446,13 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
 
     def evaluate_condition(self, parameters):
-        protagonist = self.get_described_object(parameters.protagonist['objectDescriptor'])
-        negated = parameters.predication['negated']
-        if negated:
-            return not self.evaluate_obj_predication(protagonist, parameters.predication)
-        else:
-            return self.evaluate_obj_predication(protagonist, parameters.predication)
+        protagonist = self.get_described_object(parameters['protagonist']['objectDescriptor'])
+        if protagonist:
+            negated = parameters['predication']['negated']
+            if negated:
+                return not self.evaluate_obj_predication(protagonist, parameters['predication'])
+            else:
+                return self.evaluate_obj_predication(protagonist, parameters['predication'])
 
     def evaluate_obj_predication(self, obj, predication):
         kind = predication['kind'] if 'kind' in predication else 'unmarked'
@@ -479,17 +492,15 @@ class BasicRobotProblemSolver(CoreProblemSolver):
                 return item == objs[0]
 
 
-
-
-
     # Assertions not yet implemented for robots
     def solve_assertion(self, ntuple):
         self.decoder.pprint_ntuple(ntuple)
 
     def solve_conditional_imperative(self, ntuple):
-        condition = ntuple.parameters[0].condition[0]
+        parameters = ntuple['parameters']
+        condition = parameters[0]['condition'][0]
         if self.evaluate_condition(condition):
-            for params in ntuple.parameters[0].command:
+            for params in parameters[0]['command']:
                 self.route_action(params, "command")
 
     # Conditional declaratives not yet implemented for robots
@@ -502,21 +513,3 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
 if __name__ == "__main__":
     solver = BasicRobotProblemSolver(sys.argv[1:])
-    sample = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'red', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
-    sample2 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'red', 'size': 'big', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
-    sample3 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'green', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
-    sample4 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'blue', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
-    sample5 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'red', 'size': 'small', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
-
-    sample6 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'gender': 'genderValues', 'type': 'box', 'locationDescriptor': {'relation': 'near', 'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'pink', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}}}})], predicate_type='command')
-    sample7 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance','size' : 1}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'gender': 'genderValues', 'type': 'box', 'locationDescriptor': {'relation': 'near', 'objectDescriptor': {'referent': 'robot2_instance', 'type': 'robot','size' : 1}}}})], predicate_type='command')
-
-    #sample6 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'gender': 'genderValues', 'type': 'box', 'locationDescriptor': {'relation': 'near', 'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'green', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}}}})], predicate_type='command')
-    #sample7 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'gender': 'genderValues', 'type': 'box', 'locationDescriptor': {'relation': 'near', 'objectDescriptor': {'referent': 'robot2_instance', 'type': 'robot'}}}})], predicate_type='command')
-    sample8 = Struct(predicate_type='command', parameters=[Struct(affectedProcess={'direction': None, 'heading': 'north', 'control_state': 'ongoing', 'protagonist': {'objectDescriptor': {'negated': False, 'gender': 'genderValues', 'color': 'blue', 'type': 'box', 'kind': 'None', 'number': 'singular', 'givenness': 'uniquelyIdentifiable'}}, 'goal': None, 'action': 'move', 'kind': 'execute', 'speed': 0.5, 'collaborative': False, 'distance': {'units': 'square', 'value': 4}}, collaborative=False, action='push_move', kind='cause', p_features={'voice': 'active'}, causer={'objectDescriptor': {'referent': 'robot1_instance', 'type': 'robot'}}, causalProcess={'direction': None, 'heading': None, 'control_state': 'ongoing', 'protagonist': {'objectDescriptor': {'referent': 'robot1_instance', 'type': 'robot'}}, 'acted_upon': {'objectDescriptor': {'negated': False, 'gender': 'genderValues', 'color': 'blue', 'type': 'box', 'kind': 'None', 'number': 'singular', 'givenness': 'uniquelyIdentifiable'}}, 'goal': None, 'action': 'forceapplication', 'kind': 'execute', 'speed': 0.5, 'collaborative': False, 'distance': {'units': 'square', 'value': 4}})], return_type='error_descriptor')
-    sample9 = Struct(predicate_type='command', parameters=[Struct(affectedProcess={'direction': None, 'heading': None, 'control_state': 'ongoing', 'protagonist': {'objectDescriptor': {'negated': False, 'gender': 'genderValues', 'color': 'blue', 'type': 'box', 'kind': 'None', 'number': 'singular', 'givenness': 'uniquelyIdentifiable'}}, 'goal': {'objectDescriptor': {'negated': False, 'gender': 'genderValues', 'color': 'green', 'type': 'box', 'kind': 'None', 'number': 'singular', 'givenness': 'uniquelyIdentifiable'}}, 'action': 'move', 'kind': 'execute', 'speed': 0.5, 'collaborative': False, 'distance': {'units': 'square', 'value': 4}}, collaborative=False, action='push_move', kind='cause', p_features={'voice': 'active'}, causer={'objectDescriptor': {'referent': 'robot1_instance', 'type': 'robot'}}, causalProcess={'direction': None, 'heading': None, 'control_state': 'ongoing', 'protagonist': {'objectDescriptor': {'referent': 'robot1_instance', 'type': 'robot'}}, 'acted_upon': {'objectDescriptor': {'negated': False, 'gender': 'genderValues', 'color': 'blue', 'type': 'box', 'kind': 'None', 'number': 'singular', 'givenness': 'uniquelyIdentifiable'}}, 'goal': None, 'action': 'forceapplication', 'kind': 'execute', 'speed': 0.5, 'collaborative': False, 'distance': {'units': 'square', 'value': 4}})], return_type='error_descriptor')
-    query1 = Struct(parameters=[Struct(protagonist={'objectDescriptor': {'gender': 'genderValues', 'number': 'singular', 'type': 'box', 'givenness': 'givennessValues'}}, kind='query', specificWh='which', p_features={'tense': 'present'}, predication={'negated': True, 'color': 'big'}, action='be')], predicate_type='query', return_type='singleton::instance_reference')
-    query2 = Struct(parameters=[Struct(protagonist={'objectDescriptor': {'gender': 'genderValues', 'number': 'plural', 'type': 'box', 'givenness': 'givennessValues'}}, kind='query', specificWh='which', p_features={'tense': 'present'}, predication={'negated': False, 'color': 'red'}, action='be')], predicate_type='query', return_type='collection_of::instance_reference')
-    solver.ntuple = query1
-    conditional = Struct(parameters=[Struct(command=[Struct(action='move', collaborative=False, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, heading=None, goal={'objectDescriptor': {'type': 'box', 'referent': 'box2_instance'}}, distance={'units': 'square', 'value': 4}, control_state='ongoing', speed=0.5, kind='execute', direction=None, p_features={'voice': 'notPassive'})], condition=[Struct(action='be', kind='query', protagonist={'objectDescriptor': {'type': 'box', 'referent': 'box1_instance'}}, p_features={'tense': 'present'}, predication={'negated': False, 'color': 'red'})], kind='conditional_imperative')], predicate_type='conditional_imperative', return_type='error_descriptor')
-    behind = Struct(predicate_type='command', parameters=[Struct(collaborative=False, goal={'locationDescriptor': {'objectDescriptor': {'type': 'box', 'number': 'singular', 'givenness': 'uniquelyIdentifiable', 'kind': 'None', 'negated': False, 'gender': 'genderValues', 'color': 'blue'}, 'relation': 'behind'}}, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, direction=None, heading=None, speed=0.5, p_features={'voice': 'notPassive'}, distance={'units': 'square', 'value': 4}, action='move', control_state='ongoing', kind='execute')], return_type='error_descriptor')

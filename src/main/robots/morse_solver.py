@@ -36,16 +36,15 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
                 setattr(getattr(self.world, obj['name']), 'pos',Struct(x =obj['position'][0], y=obj['position'][1], z =obj['position'][2]) )
             else:
                 #if obj['type'] in discovered:
-                print(obj['name'])
-                print(discovered)
                 if obj['name'] in discovered:
-                    print(obj)
                     description = json.loads(obj['description'])
                     self.world.__dict__[obj['name']] = Struct(pos=Struct(x =obj['position'][0], y=obj['position'][1], z = obj['position'][2]), 
                                                               name=obj['name'],
                                                               type=obj['type'],
                                                               color=description['color'],
                                                               size=description['size'])
+                    msg = "I discovered a {} at position ({}, {}).".format(obj['type'], obj['position'][0], obj['position'][1])
+                    self.respond_to_query(message=msg)
 
     def getpos(self, inst):
         instance =getattr(self.world, inst)

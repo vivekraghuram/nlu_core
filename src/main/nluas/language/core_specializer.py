@@ -8,6 +8,7 @@ The Core Specializer performs some basic operations in converting a SemSpec to a
 from nluas.language.specializer_utils import *
 from nluas.utils import *
 import pickle
+import json
 
 
 class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
@@ -38,6 +39,13 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
         self.parameters = []
 
+
+    def read_templates(self, filename):
+        with open(filename, "r") as data_file:
+            data = json.loads(data_file.read())
+            for name, template in data['templates'].items():
+                self.__dict__[name] = template
+
     def get_goal(self, process, params):
         """ Returns an object descriptor of the goal; used for SPG schemas, like in MotionPath."""
         g = process.goal
@@ -51,7 +59,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
             goal['partDescriptor'] = {'objectDescriptor': self.get_objectDescriptor(g.extensions.whole), 'relation': self.get_objectDescriptor(g)}    
         elif g.ontological_category.type() == 'region':
             goal['locationDescriptor'] = {'objectDescriptor': self.get_objectDescriptor(process.landmark), 'relation': self.get_locationDescriptor(g)}  
-        elif g.ontological_category.type() == 'antecedent':
+        elif g.referent.type() == 'anaphora':
             try:
                 goal = self.resolve_anaphoricOne(g)
             except ReferentResolutionException as e:
@@ -85,7 +93,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
             p1 = self.get_protagonist(pro.rd1, process)
             p2 = self.get_protagonist(pro.rd2, process)
             subject = {'objectDescriptor': {'referent': 'joint', 'joint': {'first': p1, 'second': p2}}}
-        elif protagonist.ontological_category.type() == 'antecedent':
+        elif protagonist.referent.type() == 'anaphora':
             try:
                 subject = self.resolve_anaphoricOne(protagonist)
             except ReferentResolutionException as e:
@@ -157,7 +165,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         # Is a distance specified?                
         if hasattr(process.spg, 'distance') and hasattr(process.spg.distance, 'amount'):
             d = process.spg.distance
-            params.update(distance=Struct(value=int(d.amount.value), units=d.units.type()))
+            params.update(distance={"value": int(d.amount.value), "units":d.units.type()})
         # Is a goal specified?
         if hasattr(process.spg, 'goal'):
             params.update(goal = self.get_goal(process.spg, params))
@@ -193,8 +201,8 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         param_type = getattr(self, param_name)
         cp = self.params_for_simple(process.process1, param_type)
         ap = self.params_for_simple(process.process2, param_type)
-        params.update(causalProcess = Struct(cp))
-        params.update(affectedProcess = Struct(ap))
+        params.update(causalProcess = cp)
+        params.update(affectedProcess = ap)
         return params
 
     def process_is_subtype(self, process):
@@ -207,21 +215,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
     def params_for_where(self, process, d):
         params = updated(d, action=process.actionary.type())
         h = process.state.second
-        if hasattr(h, 'referent'):
-            if h.referent.type() == 'antecedent':
-                try:
-                    p = self.resolve_referents(process.actionary.type())
-                except ReferentResolutionException as e:
-                    print(e.message)
-                    return None
-            else:
-                if h.referent.type():
-                    p = {'objectDescriptor': {'referent': h.referent.type(), 'type': h.ontological_category.type()}}
-                else:
-                    p = {'objectDescriptor': self.get_objectDescriptor(h)}
-                self._stacked.append(p)
-            params.update(protagonist=p)
-        #p = process.protagonist
+        params.update(protagonist=self.get_protagonist(h, process))
         return params
 
     # Dispatches "process" to a function to fill in template, depending on process type. Returns parameters.
@@ -254,22 +248,10 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
     def get_process_features(self, p_features):
         features = dict()
-        """
-        if hasattr(p_features, "tense") and p_features.tense:
-            features["tense"] = p_features.tense.type()
-        if hasattr(p_features, "voice") and p_features.voice:
-            features["voice"] = p_features.voice.type()
-        if hasattr(p_features, "negated") and p_features.negated:
-            features["negated"] = p_features.negated.type()
-        if hasattr(p_features, "lexicalAspect") and p_features.lexicalAspect:
-            features["lexicalAspect"] = p_features.lexicalAspect.type() 
-        """
         for role, filler in p_features.__items__():
             if filler:
                 features[str(role)] = filler.type()
         return features
-
-
 
     def params_for_compound(self, process, param_name="_execute"):
         if process.type() == 'SerialProcess':
@@ -321,9 +303,9 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         if cond is None or None in action:
             return None
         for i in action:
-            action2.append(Struct(i))
+            action2.append(i)
         for i in cond:
-            cond2.append(Struct(i)) 
+            cond2.append(i) 
         params = [updated(self._conditional_imperative, command=action2, condition=cond2)]
         return params 
 
@@ -337,9 +319,9 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         if cond is None or None in action:
             return None
         for i in action:
-            action2.append(Struct(i))
+            action2.append(i)
         for i in cond:
-            cond2.append(Struct(i)) 
+            cond2.append(i) 
         params = [updated(self._conditional_declarative, assertion=action2, condition=cond2)]
         return params   
 
@@ -359,12 +341,6 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         """
         self.fs = fs
         mood = fs.m.mood.replace('-', '_')
-        """
-        try:
-            mood = fs.m.mood.replace('-', '_')
-        except AttributeError as e:
-            raise MoodException("FeatureStruct has no attribute 'mood'.")
-        """
 
         # Dispatch call to some other specialize_* methods.
         # Note: now parameters is a sequence.
@@ -376,21 +352,22 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
         params = [self.replace_mappings(param) for param in params]
 
-        ntuple = updated(self._NTUPLE_T,
+        ntuple = updated(self._wrapper,
                          getattr(self, 'specialize_%s' % mood)(fs),
-                         parameters=[Struct(param) for param in params])
+                         parameters=params) #[Struct(param) for param in params])
 
 
         self.parameters += params
 
         if self.debug_mode:
-            print(Struct(ntuple))
+            print(ntuple)
             #dumpfile = open('src/main/pickled.p', 'ab')
             #pickle.dump(Struct(ntuple), dumpfile)
             #dumpfile.close()
             #dumpfile2 = open('src/main/move')
             #self._output.write("\n\n{0} \n{1} \n{2}".format(mood, self._sentence, str(Struct(ntuple))))
-        return Struct(ntuple)
+        return ntuple 
+        #return Struct(ntuple)
 
     def specialize_Conditional_Declarative(self, fs):
         return dict(predicate_type='conditional_declarative', return_type = 'error_descriptor')   

@@ -14,8 +14,6 @@ class CoreAgent(object):
 		self.setup_federation()
 		self.initialize(args[0])
 
-
-
 	def setup_federation(self):
 		self.federation = os.environ.get("ECG_FED")
 		if self.federation is None:
