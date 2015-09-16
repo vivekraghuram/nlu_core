@@ -12,8 +12,20 @@ class BossSolver(BasicRobotProblemSolver):
 		for key, value in self.workers.items():
 			self.transport.subscribe(value, self.callback)
 
-	def callback(self, ntuple):
-		print(ntuple)
+	def callback(self, json_ntuple):
+		ntuple = self.decoder.convert_JSON_to_ntuple(json_ntuple)
+		predicate_type = ntuple['predicate_type']
+		if predicate_type == "query":
+			self.solve(json_ntuple)
+		else:
+			self.route(ntuple)
+
+	def route(self, ntuple):
+		agent = self.identify_agent(ntuple)		
+
+	def identify_agent(self, ntuple):
+		predicate_type = ntuple['predicate_type']
+		
 
 
 if __name__ == "__main__":

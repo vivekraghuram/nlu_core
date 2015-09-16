@@ -68,7 +68,7 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         destination = information['destination']
         if destination:
             self.move(information['protagonist'], destination['x'], destination['y'], destination['z'], 
-                information['speed'], tolerance=3)
+                information['speed'], tolerance=3.5)
         else:
             print("Command_move, no destination.")
 

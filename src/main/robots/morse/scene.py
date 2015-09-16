@@ -16,6 +16,7 @@ path = os.getcwd() + "/src/main/robots/morse/"
 
 box_path = path + 'custom/indoors-1/boxes'
 indoor_path = path + 'custom/indoors-1/indoor-1'
+empty = path + "custom/indoors-1/empty-room"
 
 def build():
     # Add a robot with a position sensor and a motion controller
@@ -152,7 +153,9 @@ def build():
     
 
     # Environment
-    env = Environment('indoors-1/empty-room')
+    #env = Environment('indoors-1/empty-room')
+    #empty = 
+    env = Environment(empty)
     env.add_service('socket')
     
 if __name__ == '__main__':

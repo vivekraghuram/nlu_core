@@ -45,12 +45,12 @@
 		"p_features": null
 		},
 	"_conditional_imperative": {
-		"kind": "_conditional_imperative",
+		"kind": "conditional_imperative",
 		"condition": null,
 		"command": "_execute"
 		},	
 	"_conditional_declarative": {
-		"kind": "_conditional_declarative",
+		"kind": "conditional_declarative",
 		"condition": null,
 		"command": "_assertion"
 		}

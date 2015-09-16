@@ -12,7 +12,7 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
         TwoDimensionalAvoidanceSolver.__init__(self)
         self.world = build('morse')
 
-    def move(self, mover, x, y, z=0.0, speed=2, tolerance=3, collide=False):
+    def move(self, mover, x, y, z=0.0, speed=2, tolerance=3.5, collide=False):
         if collide:
             new, interrupted = mover.move_np(x=x, y=y, z=z, speed=speed, tolerance=tolerance)
         else:
@@ -57,5 +57,3 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
 
 if __name__ == "__main__":
     solver = MorseRobotProblemSolver(sys.argv[1:])
-    sample3 = Struct(return_type='error_descriptor', parameters=[Struct(direction=None, action='move', collaborative=False, kind='execute', p_features={'voice': 'notPassive'}, speed=0.5, protagonist={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, control_state='ongoing', goal={'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'color': 'green', 'kind': 'None', 'gender': 'genderValues', 'type': 'box'}})], predicate_type='command')
-    sample2 = Struct(return_type='error_descriptor', parameters=[Struct(p_features={'voice': 'active'}, kind='cause', causer={'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, action='push_move', causalProcess={'p_features': None, 'kind': 'execute', 'control_state': 'ongoing', 'protagonist': {'objectDescriptor': {'type': 'robot', 'referent': 'robot1_instance'}}, 'action': 'forceapplication', 'acted_upon': {'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'gender': 'genderValues', 'color': 'green', 'type': 'box', 'kind': 'None'}}, 'collaborative': False}, collaborative=False, affectedProcess={'kind': 'execute', 'control_state': 'ongoing', 'protagonist': {'objectDescriptor': {'number': 'singular', 'negated': False, 'givenness': 'uniquelyIdentifiable', 'gender': 'genderValues', 'color': 'green', 'type': 'box', 'kind': 'None'}}, 'collaborative': False, 'speed': 0.5, 'p_features': None, 'heading': 'north', 'action': 'move'})], predicate_type='command')
