@@ -1,16 +1,26 @@
 """
 A Morse Problem Solver (extends BasicRobotProblemSolver).
+Author: seantrott <seantrott@icsi.berkeley.edu>
 
 """
 
-from robot_solver import *
-from robot_utils.avoidance import TwoDimensionalAvoidanceSolver
+from robots.robot_solver import *
+from robots.robot_utils.avoidance import TwoDimensionalAvoidanceSolver
 
 class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSolver):
     def __init__(self, args):
         BasicRobotProblemSolver.__init__(self, args)
         TwoDimensionalAvoidanceSolver.__init__(self)
         self.world = build('morse')
+        self.update(True)
+
+    def update(self, update=False):
+        """ This automatically populates the world model with objects from the Morse scene,
+        which aren't necessarily in the builder.py file. UPDATE flag can be changed in __init__
+        to execute it or not. """
+        if update:
+            robot1 = self.world.robot1_instance
+            self.update_world(agent=robot1, discovered=["desk1", "box5_instance"])
 
     def move(self, mover, x, y, z=0.0, speed=2, tolerance=3.5, collide=False):
         if collide:

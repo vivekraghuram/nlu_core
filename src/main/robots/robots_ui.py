@@ -1,4 +1,5 @@
 """
+Author: seantrott <seantrott@icsi.berkeley.edu>
 Similar to a regular UserAgent, but it uses a RobotSpecializer instead.
 """
 

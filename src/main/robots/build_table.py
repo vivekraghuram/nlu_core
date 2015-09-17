@@ -1,3 +1,7 @@
+"""
+Author: seantrott <seantrott@icsi.berkeley.edu>
+"""
+
 from robots_ui import *
 import json
 

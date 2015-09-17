@@ -1,3 +1,7 @@
+"""
+Author: seantrott <seantrott@icsi.berkeley.edu>
+"""
+
 from nluas.language.core_specializer import *
 
 filepath = "/Users/seantrott/icsi/nlu-core/src/main/robots/robot_templates.json"
