@@ -1,3 +1,7 @@
+"""
+Author: seantrott <seantrott@icsi.berkeley.edu>
+"""
+
 import enchant
 
 general = enchant.Dict("en_US")

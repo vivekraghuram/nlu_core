@@ -1,3 +1,7 @@
+"""
+Author: seantrott <seantrott@icsi.berkeley.edu>
+"""
+
 from nluas.Transport import *
 import argparse
 import os

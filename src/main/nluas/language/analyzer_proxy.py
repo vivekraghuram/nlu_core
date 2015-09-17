@@ -1,4 +1,7 @@
 """ Proxy for Analyzer. Used by "main" to connect with Analyzer object.
+
+Author: seantrott <seantrott@icsi.berkeley.edu>
+
 """
 try:
     # Python 2?

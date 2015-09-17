@@ -191,6 +191,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
     def causalProcess(self, process, param_name="_execute"):
         params = updated(self._cause, action = process.actionary.type())
         params.update(causer = self.get_protagonist(process.protagonist, process))
+        params.update(protagonist = params['causer'])
         collab = self.get_actionDescriptor(process)
         if 'collaborative' in collab:
             params.update(collaborative=collab['collaborative'])

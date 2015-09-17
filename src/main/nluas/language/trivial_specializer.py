@@ -1,3 +1,9 @@
+"""
+Author: seantrott <seantrott@icsi.berkeley.edu>
+
+Developing/Testing a new method for specializers. 
+"""
+
 from nluas.language.specializer_utils import *
 from nluas.utils import *
 import pickle

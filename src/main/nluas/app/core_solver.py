@@ -11,7 +11,9 @@ predicate_type.
 to route each parameter to the task-specific method. E.g., "solve_move",
 or "solve_push_move", etc.
 
-<seantrott@icsi.berkeley.edu>
+Author: seantrott <seantrott@icsi.berkeley.edu>
+
+
 
 "check_for_clarification" should check ntuple and determine if everything is
 specified enough. This implementation will depend on a solver's world model,

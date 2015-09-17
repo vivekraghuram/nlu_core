@@ -1,3 +1,8 @@
+"""
+Author: seantrott <seantrott@icsi.berkeley.edu>
+
+"""
+
 from nluas.language.core_specializer import *
 from nluas.core_agent import *
 from nluas.language.analyzer_proxy import *

@@ -1,4 +1,7 @@
 """
+
+Author: seantrott <seantrott@icsi.berkeley.edu>
+
 A RobotProblemSolver that extends the CoreProblemSolver in the NLUAS module.
 
 Actions, like "move", should be named by predicate + action type.
@@ -20,7 +23,7 @@ from action/query functions. Thus, we'd have several functions involving "move",
 
 from nluas.app.core_solver import *
 from nluas.utils import *
-from builder import *
+from robots.builder import *
 import sys
 import random
 from math import sqrt
