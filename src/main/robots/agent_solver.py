@@ -13,6 +13,13 @@ class AgentSolver(BasicRobotProblemSolver):
         self.boss_destination = "{}_{}".format(self.federation, "ProblemSolver")
         #self.ui_address = self.boss_destination
         self.transport.subscribe(self.boss_destination, self.callback)
+        self.setup_agent()
+
+    def setup_agent(self):
+    	for name in self.world:
+    		new = name.split("_instance")[0]
+    		if new == self.name.lower():
+    			self.agent = getattr(self.world, name)
 
 
     def callback(self, ntuple):

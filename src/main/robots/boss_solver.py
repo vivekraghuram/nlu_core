@@ -31,15 +31,20 @@ class BossSolver(BasicRobotProblemSolver):
         else:
             self.route(ntuple)
 
+    def handle_process(self, old_ntuple, parameters, agent):
+        new_ntuple = dict()
+        if ntuple['predicate_type'] == "conditional_imperative":
+            if self.evaluate_condition(ntuple['parameters'][0]['condition'][0]):
+                #new_params = 
+                #new_ntuple['parameters'] = ntuple['p']
+                new_ntuple['predicate_type'] = "command"
+                new_ntuple['return_type'] = ntuple['return_type']
+
+
+
+
+
     def route(self, ntuple):
-        """ Should actually do this for each parameter. """
-        """
-        agent_desc = self.identify_agent(ntuple)  
-        agent = agent_desc['objectDescriptor']['referent']
-        if agent in self.workers:
-            destination = self.workers[agent]
-            self.transport.send(destination, self.decoder.convert_to_JSON(ntuple))
-        """
         for param in ntuple['parameters']:
             agent_desc = self.identify_agent(param)
             if 'referent' in agent_desc['objectDescriptor']:
@@ -50,6 +55,8 @@ class BossSolver(BasicRobotProblemSolver):
                                       predicate_type=ntuple['predicate_type'],
                                       parameters=[param])
                     self.transport.send(destination, self.decoder.convert_to_JSON(new_ntuple))
+            elif agent in ["team_instance", "unknown", "joint"]:
+                new_ntuple = self.build_new_ntuple(ntuple, param, agent)
 
 
 

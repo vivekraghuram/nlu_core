@@ -4,6 +4,7 @@
 from morse.builder import ATRV, Pose, Waypoint, Environment, SemanticCamera, PassiveObject,Destination
 
 
+
 from morse.builder import Zone
 from math import pi
 from morse.builder import *
@@ -22,6 +23,17 @@ def build():
     # Add a robot with a position sensor and a motion controller
     
     atrv = ATRV('robot1_instance')
+
+    
+    pr2 = BasePR2("navigator")
+    pr2_motion = Waypoint()
+    pr2_motion.properties(ObstacleAvoidance=False)
+    pr2_motion.add_interface('socket')
+    pr2.append(pr2_motion)
+    pr2_camera = SemanticCamera("camera")
+    pr2_camera.translate(0.0, 0.0, 40.0) # 20.0
+    pr2_camera.rotate(0.0, -pi/2.0, 0.0)
+    pr2.append(pr2_camera)
     
     orientation_robot1_instance = Orientation()
     orientation_robot1_instance.translate(x=0, y=0, z=0)

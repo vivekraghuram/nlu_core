@@ -12,9 +12,9 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
         BasicRobotProblemSolver.__init__(self, args)
         TwoDimensionalAvoidanceSolver.__init__(self)
         self.world = build('morse')
-        self.update(True)
+        self.build_world(False)
 
-    def update(self, update=False):
+    def build_world(self, update=False):
         """ This automatically populates the world model with objects from the Morse scene,
         which aren't necessarily in the builder.py file. UPDATE flag can be changed in __init__
         to execute it or not. """
