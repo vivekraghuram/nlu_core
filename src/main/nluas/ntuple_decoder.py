@@ -30,10 +30,10 @@ class NtupleDecoder(object):
 
 
 	def pprint_ntuple(self, ntuple):
-		print("{}Predicate type {}: {}".format(Color.BOLD, Color.END, ntuple.predicate_type))
-		print("{}Return type {}: {}".format(Color.BOLD, Color.END, ntuple.return_type))
-		for param in ntuple.parameters:
-			for key, value in param.__dict__.items():
+		print("{}Predicate type {}: {}".format(Color.BOLD, Color.END, ntuple['predicate_type']))
+		print("{}Return type {}: {}".format(Color.BOLD, Color.END, ntuple['return_type']))
+		for param in ntuple['parameters']:
+			for key, value in param.items():
 				if value:
 					print("{}{}{}: {}".format(Color.BOLD, key, Color.END, value))
 		print("\n")

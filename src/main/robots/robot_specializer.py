@@ -13,3 +13,13 @@ class RobotSpecializer(CoreSpecializer, RobotTemplateSpecializer):
 
 		self.read_templates(filepath)
 
+		self.simple_processes['Perception'] = self.params_for_perception
+
+
+	def params_for_perception(self, process, params):
+		perceived = self.get_objectDescriptor(process.content)
+		params.update(content=perceived)
+		return params
+
+
+

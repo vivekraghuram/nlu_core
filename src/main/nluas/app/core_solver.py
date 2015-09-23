@@ -52,13 +52,6 @@ class CoreProblemSolver(CoreAgent):
         parser.add_argument("-c", "--complexity", default=1, type=check_complexity, help="indicate level of complexity: 1, 2, or 3.")
         return parser
 
-    
-    def read_templates(self, filename):
-        with open(filename, "r") as data_file:
-            data = json.loads(data_file.read())
-            for name, template in data['templates'].items():
-                self.__dict__[name] = template
-
     def callback(self, ntuple):
         self.solve(ntuple)
 
@@ -85,10 +78,15 @@ class CoreProblemSolver(CoreAgent):
             try:
                 dispatch = getattr(self, "solve_%s" %predicate_type)
                 dispatch(ntuple)
+                self.broadcast()
             except AttributeError as e:
-                print(e)
+                traceback.print_exc()
                 message = "I cannot solve a(n) {}.".format(predicate_type)
                 self.identification_failure(message)
+
+    def broadcast(self):
+        """ Here, does nothing. Later, an AgentSolver will broadcast information back to BossSolver. """
+        pass
                 
     def update_world(self, discovered=[]):
         for item in discovered:

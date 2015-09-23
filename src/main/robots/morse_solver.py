@@ -12,7 +12,7 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
         BasicRobotProblemSolver.__init__(self, args)
         TwoDimensionalAvoidanceSolver.__init__(self)
         self.world = build('morse')
-        self.build_world(False)
+        #self.build_world(False)
 
     def build_world(self, update=False):
         """ This automatically populates the world model with objects from the Morse scene,
@@ -20,7 +20,7 @@ class MorseRobotProblemSolver(BasicRobotProblemSolver, TwoDimensionalAvoidanceSo
         to execute it or not. """
         if update:
             robot1 = self.world.robot1_instance
-            self.update_world(agent=robot1, discovered=["desk1", "box5_instance"])
+            self.update_world(agent=robot1, discovered=[])
 
     def move(self, mover, x, y, z=0.0, speed=2, tolerance=3.5, collide=False):
         if collide:

@@ -34,6 +34,7 @@ def build(subsystem):
             world = Worlds.scene()
             setattr(world, 'robot1_instance', robot1_instance)
             setattr(world, 'robot2_instance', robot2_instance)
+            print("================")
             return world
 
         @staticmethod

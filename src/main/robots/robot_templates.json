@@ -15,7 +15,7 @@
 		"protagonist": null,
 		"collaborative": false,
 		"p_features": null,
-		"speed": 0.6,
+		"speed": 0.5,
 		"goal": null,
 		"heading": null,
 		"direction": null,

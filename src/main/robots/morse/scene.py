@@ -24,7 +24,7 @@ def build():
     
     atrv = ATRV('robot1_instance')
 
-    
+    """
     pr2 = BasePR2("navigator")
     pr2_motion = Waypoint()
     pr2_motion.properties(ObstacleAvoidance=False)
@@ -34,6 +34,7 @@ def build():
     pr2_camera.translate(0.0, 0.0, 40.0) # 20.0
     pr2_camera.rotate(0.0, -pi/2.0, 0.0)
     pr2.append(pr2_camera)
+    """
     
     orientation_robot1_instance = Orientation()
     orientation_robot1_instance.translate(x=0, y=0, z=0)

@@ -46,6 +46,10 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         self._distance_threshold = 4
         self._attributes = ['size', 'color']
 
+    def euclidean_distance(self, p, q):
+        """ Gets euclidean distance between objects p and q. Takes in objects themselves. """
+        return sqrt(pow((p.pos.x-q.pos.x ),2) + pow((p.pos.y-q.pos.y ),2) ) 
+
 
     def set_home(self, ntuple):
         parameters = ntuple['parameters']
@@ -53,7 +57,9 @@ class BasicRobotProblemSolver(CoreProblemSolver):
             prot = parameters[0]['causer']
         else:
             prot = parameters[0]['protagonist']
-        self._home = self.get_described_object(prot['objectDescriptor']).pos
+        obj = self.get_described_object(prot['objectDescriptor'])
+        if obj:
+            self._home = obj.pos
 
     def solve_command(self, ntuple):
         self.set_home(ntuple)
@@ -84,7 +90,7 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         information['speed'] = parameters['speed'] * self._speed
         if parameters['goal']:
             information['destination'] =self.goal_info(parameters['goal'], information['protagonist'])
-        elif parameters.heading:
+        elif parameters['heading']:
             information['destination'] = self.heading_info(information['protagonist'], parameters['heading'], parameters['distance'])
         return information
 
@@ -390,7 +396,7 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         attributes = ""
         for key, value in properties.items():   # Creates string of properties
             if key == "referent":
-                return value
+                return value[0].upper() + value.replace("_instance", "")[1:]
             if key == "color" or key == "size":
                 attributes += " " + value 
             if key == "location":
@@ -511,8 +517,11 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         self.decoder.pprint_ntuple(ntuple)
 
 
-    def move(self, mover, x, y, z=0.0, speed=2, tolerance=3, collide=False):
+    def move(self, mover, x, y, z=1.0, speed=2, tolerance=3, collide=False):
         print("{} is moving to ({}, {}, {}).".format(mover.name, x, y, z))
+        mover.pos.x = x
+        mover.pos.y = y
+        mover.pos.z = z
 
 if __name__ == "__main__":
     solver = BasicRobotProblemSolver(sys.argv[1:])
