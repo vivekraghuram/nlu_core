@@ -357,7 +357,6 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                          getattr(self, 'specialize_%s' % mood)(fs),
                          parameters=params) #[Struct(param) for param in params])
 
-
         self.parameters += params
 
         if self.debug_mode:

@@ -70,7 +70,7 @@ class UserAgent(CoreAgent):
                     break
                 except Exception as e:
                     self.output_stream(e)
-                    #traceback.print_exc()
+                    traceback.print_exc()
         except Exception as e:
             print(e)
 
@@ -144,5 +144,9 @@ class UserAgent(CoreAgent):
             else:
                 self.process_input(msg)
 
+
+if __name__ == "__main__":
+    ui = UserAgent(sys.argv[1:])
+    ui.prompt()
 
 

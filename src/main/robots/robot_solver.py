@@ -222,7 +222,8 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         if description['relation'] == 'behind':
             return self.behind(obj.pos, protagonist.pos)
         else:
-            print(properties['relation'])
+            print(description['relation'])
+            #return [0, 0]
 
     def behind(self, position, reference):
         xdiff = position.x - reference.y
@@ -280,7 +281,6 @@ class BasicRobotProblemSolver(CoreProblemSolver):
             return locations
 
     def get_described_objects(self, description, multiple=False):
-
         if 'referent' in description:
             if hasattr(self.world, description['referent']):
                 return [getattr(self.world, description['referent'])]
@@ -310,6 +310,11 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
 
     def get_described_object(self, description, multiple=False):
+        if "referent" in description and description['referent'] == "joint":
+            description = description['joint']
+            returned = [self.get_described_object(description['first']['objectDescriptor']), 
+                        self.get_described_object(description['second']['objectDescriptor'])]
+            return returned
         objs = self.get_described_objects(description, multiple)
         if len(objs) == 1:
             self._recent = objs[0]

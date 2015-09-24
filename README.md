@@ -27,7 +27,7 @@ the Transport mechanism (see api.txt), as well as the configuration/setup parser
 The repository includes several setup scripts. To run with a language parser, you'll also need to have
 downloaded the ecg-grammars repository found here: https://github.com/icsi-berkeley/ecg-grammars
 
-You can just run setup.sh as is, and it'll run a text-based demo of the whole systme. If you'd prefer to 
+You can just run setup.sh as is, and it'll run a text-based demo of the whole system. If you'd prefer to 
 run with Morse, you should first run:
 
 sh morse.sh

@@ -122,12 +122,16 @@ class UtilitySpecializer(DebuggingSpecializer):
                 if filler.type() == 'Sidedness':
                     if filler.back.index() == goal.index():
                         return 'behind' #location = 'behind'
+                elif filler.type() == "InteriorRelation":
+                    if filler.profiledArea.index() == goal.index():
+                        return "between"
                 elif filler.type() == 'BoundedObject':
                     if filler.interior.index() == goal.index():
                         if i.m.type() == "TrajectorLandmark":
                             return "in"
                         elif i.m.type() == "SPG":
                             return 'into'
+                #elif filler.type() == ""
                 elif filler.type() == "NEAR_Locative":
                     if filler.p.proximalArea.index() == goal.index(): #i.m.profiledArea.index(): 
                         location = 'near'    
@@ -143,7 +147,12 @@ class UtilitySpecializer(DebuggingSpecializer):
     of object type, properties, and trajector landmarks.
     """
     def get_objectDescriptor(self, goal, resolving=False):
-        if 'referent' in goal.__dir__() and goal.referent.type():
+        if goal.type() == "ConjRD":
+            returned = dict(referent="joint")
+            returned['joint'] = {'first': {'objectDescriptor': self.get_objectDescriptor(goal.rd1)}, 
+                                    'second': {'objectDescriptor': self.get_objectDescriptor(goal.rd2)}}
+            return returned
+        elif 'referent' in goal.__dir__() and goal.referent.type():
             if goal.referent.type() == "antecedent":
                 return self.resolve_referents()['objectDescriptor']
             elif goal.referent.type() == "anaphora" and not resolving:
@@ -177,6 +186,7 @@ class UtilitySpecializer(DebuggingSpecializer):
                                 returned[str(filler.property.type())] = v
                             returned['kind'] = str(filler.kind.type())
                     if filler.type() == "TrajectorLandmark":
+                    #if self.analyzer.issubtype('SCHEMA', filler.type(), 'TrajectorLandmark'):
                         if filler.trajector.index() == goal.index():
                             l = self.get_objectDescriptor(filler.landmark)
                             relation = self.get_locationDescriptor(filler.profiledArea)
