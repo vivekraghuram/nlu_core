@@ -19,6 +19,7 @@
 		"goal": null,
 		"heading": null,
 		"direction": null,
+		"path": null,
 		"distance": {"value": 4, "units": "square"}
 		},
 	"_assertion": {

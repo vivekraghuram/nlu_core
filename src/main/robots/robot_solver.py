@@ -42,7 +42,8 @@ class BasicRobotProblemSolver(CoreProblemSolver):
                               'small': 1}
         self._home = None
         self._distance_multipliers = {'box': 1.3,
-                                    'robot': .7}
+                                    'robot': .7,
+                                    'location': .6}
         self._distance_threshold = 4
         self._attributes = ['size', 'color']
 
@@ -77,7 +78,7 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         destination = information['destination']
         if destination:
             self.move(information['protagonist'], destination['x'], destination['y'], destination['z'], 
-                information['speed'], tolerance=3.5)
+                information['speed'], tolerance=2)
         else:
             print("Command_move, no destination.")
 
@@ -200,6 +201,22 @@ class BasicRobotProblemSolver(CoreProblemSolver):
                 locations.append(candidate)
         return locations
 
+    def get_between(self, candidates, objs):
+        locations = []
+        for candidate in candidates:
+            if (candidate not in objs) and self.is_between(candidate, objs[0].pos, objs[1].pos):
+                locations.append(candidate)
+        print(locations)
+        return locations
+        #return [candidates[0]]
+
+
+    def is_between(self, candidate, pos1, pos2):
+        between = self.between(pos1, pos2)
+        between_obj = Struct(pos=Struct(x=between[0], y=between[1], z=between[2]), type="location", size=1) # This is a hack...
+        return self.is_near(candidate, between_obj)
+        #return True
+
     def get_threshold(self, first, second):
         multiplier = (self._distance_multipliers[first.type] * first.size) + (self._distance_multipliers[second.type] * second.size)
         return self._distance_threshold + multiplier
@@ -221,9 +238,22 @@ class BasicRobotProblemSolver(CoreProblemSolver):
         obj = self.get_described_object(description['objectDescriptor'])
         if description['relation'] == 'behind':
             return self.behind(obj.pos, protagonist.pos)
-        else:
-            print(description['relation'])
-            #return [0, 0]
+        elif description['relation'] == "between":
+            if len(obj) > 1:
+                between = self.between(obj[0].pos, obj[1].pos)
+                return between
+
+
+    def midpoint(self, pos1, pos2):
+        x = (pos1.x + pos2.x)/2
+        y = (pos1.y + pos2.y)/2
+        z = (pos1.z + pos2.z)/2
+        return [x, y, z]
+
+    def between(self, pos1, pos2):
+        return self.midpoint(pos1, pos2)
+
+
 
     def behind(self, position, reference):
         xdiff = position.x - reference.y
@@ -256,16 +286,22 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
     def get_described_locations(self, candidates, description):
         obj = self.get_described_object(description['objectDescriptor'])
+        locations = []
         if obj:
-            locations = []
             if description['relation'] == 'near':
                 locations = self.get_near(candidates, obj)
             elif description['relation'] == 'behind':
                 # TODO: get_behind
                 pass
-            return locations
-        else:
-            return []
+            elif description['relation'] == "between":
+                if len(obj) == 2:
+                    locations = self.get_between(candidates, obj)
+                    print(locations)
+                #else:
+                #    self.identification_failure("")
+        return locations
+        #else:
+        #    return []
 
 
 
@@ -397,6 +433,9 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
     def assemble_string(self, properties):
         """ Takes in properties and assembles a string, to format: "which blue box", etc. """
+        if "referent" in properties and properties['referent'] == "joint":
+            properties = properties['joint']
+            return self.assemble_string(properties['first']['objectDescriptor']) + " and " + self.assemble_string(properties['second']['objectDescriptor'])
         ont = properties['type']
         attributes = ""
         for key, value in properties.items():   # Creates string of properties
@@ -430,7 +469,8 @@ class BasicRobotProblemSolver(CoreProblemSolver):
 
     def eval_where(self, protagonist, predication=None, num="singleton"):
         obj = self.get_described_object(protagonist['objectDescriptor'])
-        if obj and len(obj) >= 1:
+        #if obj and len(obj) >= 1:
+        if obj:
                 message = "The position of the {} is: x:{}, y:{}".format(self.assemble_string(protagonist['objectDescriptor']), obj.pos.x, obj.pos.y)
                 message = "The position of the {} is: ({}, {})".format(self.assemble_string(protagonist['objectDescriptor']), obj.pos.x, obj.pos.y)
                 self.respond_to_query(message)

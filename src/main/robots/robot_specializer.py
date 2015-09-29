@@ -3,8 +3,10 @@ Author: seantrott <seantrott@icsi.berkeley.edu>
 """
 
 from nluas.language.core_specializer import *
+import os
+path = os.getcwd()
 
-filepath = "/Users/seantrott/icsi/nlu-core/src/main/robots/robot_templates.json"
+filepath = path + "/src/main/robots/robot_templates.json"
 
 class RobotSpecializer(CoreSpecializer, RobotTemplateSpecializer):
 	def __init__(self, analyzer_port):

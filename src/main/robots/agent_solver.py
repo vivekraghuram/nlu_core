@@ -7,7 +7,11 @@ from robots.robot_solver import BasicRobotProblemSolver
 import sys
 from nluas.utils import Struct
 
-filepath = "/Users/seantrott/icsi/nlu-core/src/main/robots/agent_templates.json"
+import os
+path = os.getcwd()
+
+filepath = path + "/src/main/robots/agent_templates.json"
+
 
 class AgentSolver(BasicRobotProblemSolver):
     def __init__(self, args):

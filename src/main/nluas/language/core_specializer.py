@@ -50,40 +50,41 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         """ Returns an object descriptor of the goal; used for SPG schemas, like in MotionPath."""
         g = process.goal
         goal = dict()
-        if g.type() == 'home':
-            goal['location'] = g.type()
-        elif g.ontological_category.type() == 'heading':
-            goal = None
-            params.update(heading=g.tag.type())
-        elif self.analyzer.issubtype('ONTOLOGY', g.ontological_category.type(), 'part'): # checks if it's a "part" in a part whole relation
-            goal['partDescriptor'] = {'objectDescriptor': self.get_objectDescriptor(g.extensions.whole), 'relation': self.get_objectDescriptor(g)}    
-        elif g.ontological_category.type() == 'region':
-            goal['locationDescriptor'] = {'objectDescriptor': self.get_objectDescriptor(process.landmark), 'relation': self.get_locationDescriptor(g)}  
-        elif g.referent.type() == 'anaphora':
-            try:
-                goal = self.resolve_anaphoricOne(g)
-            except ReferentResolutionException as e:
-                print(e.message)
-        elif g.referent.type():
-            if g.referent.type() == "antecedent":
+        if hasattr(g, "ontological_category"):
+            if g.type() == 'home':
+                goal['location'] = g.type()
+            elif g.ontological_category.type() == 'heading':
+                goal = None
+                params.update(heading=g.tag.type())
+            elif self.analyzer.issubtype('ONTOLOGY', g.ontological_category.type(), 'part'): # checks if it's a "part" in a part whole relation
+                goal['partDescriptor'] = {'objectDescriptor': self.get_objectDescriptor(g.extensions.whole), 'relation': self.get_objectDescriptor(g)}    
+            elif g.ontological_category.type() == 'region':
+                goal['locationDescriptor'] = {'objectDescriptor': self.get_objectDescriptor(process.landmark), 'relation': self.get_locationDescriptor(g)}  
+            elif g.referent.type() == 'anaphora':
                 try:
-                    if g.givenness.type() == 'distinct':
-                        goal = self.resolve_anaphoricOne(g)
-                    else:
-                        goal = self.resolve_referents(params['action'])
+                    goal = self.resolve_anaphoricOne(g)
                 except ReferentResolutionException as e:
                     print(e.message)
-                    return None
-                # Resolve_referents()
+            elif g.referent.type():
+                if g.referent.type() == "antecedent":
+                    try:
+                        if g.givenness.type() == 'distinct':
+                            goal = self.resolve_anaphoricOne(g)
+                        else:
+                            goal = self.resolve_referents(params['action'])
+                    except ReferentResolutionException as e:
+                        print(e.message)
+                        return None
+                    # Resolve_referents()
+                else:
+                    goal['objectDescriptor'] = self.get_objectDescriptor(g) #{'referent': g.referent.type(), 'type': g.ontological_category.type()}    ## Possibly add "object descriptor" as key here        
+            elif g.ontological_category.type() == 'location':
+                # if complex location, get "location descriptor"
+                goal['location'] = (int(g.xCoord), int(g.yCoord))
             else:
-                goal['objectDescriptor'] = self.get_objectDescriptor(g) #{'referent': g.referent.type(), 'type': g.ontological_category.type()}    ## Possibly add "object descriptor" as key here        
-        elif g.ontological_category.type() == 'location':
-            # if complex location, get "location descriptor"
-            goal['location'] = (int(g.xCoord), int(g.yCoord))
-        else:
-            goal['objectDescriptor'] = self.get_objectDescriptor(g) #properties
-            #goal.objectDescriptor['type'] = goal.type
-        self._stacked.append(goal)
+                goal['objectDescriptor'] = self.get_objectDescriptor(g) #properties
+                #goal.objectDescriptor['type'] = goal.type
+            self._stacked.append(goal)
         return goal   
 
     def get_protagonist(self, protagonist, process):
@@ -148,7 +149,16 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         #    params = self.crosscheck_params(params)
 
         params.update(predication = a)
-        return params                
+        return params     
+
+
+    def get_path(self, spg, params):
+        path = spg.path
+        loc = dict()
+        if hasattr(path, "ontological_category"):
+            loc['locationDescriptor'] = {'relation': self.get_locationDescriptor(path), 
+                                         'objectDescriptor': self.get_objectDescriptor(spg.landmark)}    
+        return loc     
 
 
     
@@ -162,6 +172,8 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         if hasattr(process, 'heading'):
             if process.heading.type():
                 params.update(heading=process.heading.tag.type())
+        if hasattr(process.spg, 'path'):
+            params.update(path=self.get_path(process.spg, params))
         # Is a distance specified?                
         if hasattr(process.spg, 'distance') and hasattr(process.spg.distance, 'amount'):
             d = process.spg.distance

@@ -125,12 +125,17 @@ class UtilitySpecializer(DebuggingSpecializer):
                 elif filler.type() == "InteriorRelation":
                     if filler.profiledArea.index() == goal.index():
                         return "between"
+                    elif filler.trajector.index() == goal.index():
+                        return "between"
                 elif filler.type() == 'BoundedObject':
                     if filler.interior.index() == goal.index():
                         if i.m.type() == "TrajectorLandmark":
                             return "in"
                         elif i.m.type() == "SPG":
                             return 'into'
+                elif filler.type() == "SPG":
+                    if filler.path.index() == goal.index():
+                        return "through"
                 #elif filler.type() == ""
                 elif filler.type() == "NEAR_Locative":
                     if filler.p.proximalArea.index() == goal.index(): #i.m.profiledArea.index(): 
